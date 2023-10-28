@@ -107,6 +107,12 @@
         margin: 0 auto;
         width: 50%;
     }
+
+    .video-feed {
+      height: 50%;
+      width: 100%;
+      max-height: 50vh;
+    }
     
   </style>
 </head>
@@ -121,7 +127,7 @@
 <h1>Color Scanner</h1>
 
 <div id="video-container">
-  <video id="qr-video"></video>
+  <video id="qr-video" class="video-feed"></video>
 </div>
 <button id="startscan-button">Scan</button>
 <button id="stopscan-button">StopScan</button>
