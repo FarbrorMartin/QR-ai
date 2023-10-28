@@ -118,13 +118,18 @@
         
         border: none;
         border-radius :5px; 
-        width: 20%;
-        height: 20%;
+        width: 100px;
+        height: 100px;
         margin: auto;
+        background-image: url('qr-code-scan-icon.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
     }
 
-    .scan-button-active{
-      background-color:#f13c00; 
+    .scan-button.active{
+      background-image: url('qr-code-scan-icon-active.png');
+      
     }
 
     .scan-button button img{
@@ -161,7 +166,7 @@
 </div>
 <div class="scan-button">
   <button id="toggle-scan-button" class="scan-button">
-    <img src="qr-code-scan-icon.png" class="scan-button"</img>
+    
   </button>
 </div>
 <div class="score"></div>
@@ -214,12 +219,12 @@
   function toggleScanner(){
     if (videoContainer.classList.contains("hidden")){
       videoContainer.classList.remove("hidden");
-      scanButton.classList.add("scan-button-active");
+      scanButton.classList.toggle("active");
       scanner.start();
     }
     else{
       videoContainer.classList.add("hidden");
-      scanButton.classList.remove("scan-button-active");
+      scanButton.classList.toggle("active");
       scanner.stop();
     }
   }
