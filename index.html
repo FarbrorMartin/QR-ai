@@ -108,12 +108,42 @@
         width: 50%;
     }
 
+    .scan-button {
+      text-align: center;
+    }
+
+    .scan-button button{
+       
+        color:rgb(255, 255, 255); 
+        
+        border: none;
+        border-radius :5px; 
+        width: 20%;
+        height: 20%;
+        margin: auto;
+    }
+
+    .scan-button-active{
+      background-color:#f13c00; 
+    }
+
+    .scan-button button img{
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
     .video-feed {
       height: 50%;
       width: 100%;
       max-height: 50vh;
+      
     }
     
+    .hidden {
+      display: none;
+    }
+
   </style>
 </head>
 <body>
@@ -126,11 +156,14 @@
 
 <h1>Color Scanner</h1>
 
-<div id="video-container">
-  <video id="qr-video" class="video-feed"></video>
+<div id="video-container" class="hidden" >
+  <video id="qr-video" class="video-feed" </video>
 </div>
-<button id="startscan-button">Scan</button>
-<button id="stopscan-button">StopScan</button>
+<div class="scan-button">
+  <button id="toggle-scan-button" class="scan-button">
+    <img src="qr-code-scan-icon.png" class="scan-button"</img>
+  </button>
+</div>
 <div class="score"></div>
 
 
@@ -140,6 +173,8 @@
 <script type="module">
   import QrScanner from "./qrscan/qr-scanner.min.js";
   const video = document.querySelector("#qr-video")
+  const videoContainer = document.querySelector("#video-container")
+  const scanButton = document.querySelector("#toggle-scan-button")
   const scanner = new QrScanner(video, result => {
     scanner.stop();
     var url = new URL(result.data);
@@ -153,12 +188,11 @@
     });
 
   scanner.setCamera("environment");
-  document.querySelector("#startscan-button").addEventListener("click", function(){
-    scanner.start();
-  })
-  document.querySelector("#stopscan-button").addEventListener("click", function(){
-    scanner.stop();
-  })
+  scanButton.addEventListener("click", toggleScanner)
+  // document.querySelector("#stopscan-button").addEventListener("click", function(){
+  //   videoContainer.classList.add("hidden");
+  //   scanner.stop();
+  // })
   var colors = ["red", "green", "blue"];
   var expectedColorIndex = parseInt(localStorage.getItem("expectedColorIndex")) || 0;
   var score = parseInt(localStorage.getItem("score")) || 0;
@@ -176,6 +210,19 @@
   // startButton.addEventListener("click", function() {
   //   startPopup.style.display = "none";
   // });
+
+  function toggleScanner(){
+    if (videoContainer.classList.contains("hidden")){
+      videoContainer.classList.remove("hidden");
+      scanButton.classList.add("scan-button-active");
+      scanner.start();
+    }
+    else{
+      videoContainer.classList.add("hidden");
+      scanButton.classList.remove("scan-button-active");
+      scanner.stop();
+    }
+  }
 
 
   function scanQRCode(urlParams) {
