@@ -218,20 +218,29 @@
 
   function toggleScanner(){
     if (videoContainer.classList.contains("hidden")){
-      videoContainer.classList.remove("hidden");
-      scanButton.classList.toggle("active");
-      scanner.start();
+      setScannerState(true);
     }
     else{
+      setScannerState(false);
+    }
+  }
+
+  function setScannerState(active){
+    if (active){
+      videoContainer.classList.remove("hidden");
+      scanButton.classList.add("active");
+      scanner.start();
+    }
+    else {
       videoContainer.classList.add("hidden");
-      scanButton.classList.toggle("active");
+      scanButton.classList.remove("active");
       scanner.stop();
     }
   }
 
 
   function scanQRCode(urlParams) {
-    
+    setScannerState(false);
     var color = urlParams.get("color");
     
     if (color === null) {
