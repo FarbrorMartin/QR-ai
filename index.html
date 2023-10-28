@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Color Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .score {
+      font-size: 36px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .color-block {
+      width: 200px;
+      height: 200px;
+      margin: auto;
+      margin-top: 50px;
+      border-radius: 10px;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .popup h2 {
+      font-size: 36px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .popup p {
+      font-size: 24px;
+      text-align: center;
+    }
+    .next-color {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .modal {
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow:auto; /* Enable scroll if needed */
+        background-color:#000000; /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+        background-color:#fefefe;
+        margin:auto; /* 15% from the top and centered */
+        padding-top:20px; 
+        padding-bottom:20px; 
+        border-radius :10px; 
+        border:none; 
+        width :80%; 
+        height :auto; 
+        box-shadow :0px 0px 10px #000000b3; 
+        animation-name :modalopen; 
+        animation-duration :1s
+    }
+
+    /* Add Animation */
+    @keyframes modalopen {
+        from {opacity :0}
+        to {opacity :1}
+    }
+
+    .modal-content p{
+        font-size :24px; 
+        text-align:center
+    }
+
+    .modal-content button{
+        background-color:#4CAF50; 
+        color:white; 
+        border:none; 
+        border-radius :5px; 
+        padding :10px; 
+        margin-top :20px
+    }
+
+    .modal-content button:hover{
+        cursor:pointer
+    }
+
+    .modal-button {
+        display: block;
+        margin: 0 auto;
+        width: 50%;
+    }
+    
+  </style>
+</head>
+<body>
+  
+<!-- <div id="start-popup" class="popup">
+  <h2>Welcome to Color Scanner!</h2>
+  <p>Click the button below to start playing.</p>
+  <button id="start-button">Start</button>
+</div> -->
+
+<h1>Color Scanner</h1>
+
+<div class="score"></div>
+
+
+
+<div class="next-color"></div>
+
+<script>
+var colors = ["red", "green", "blue"];
+var expectedColorIndex = parseInt(localStorage.getItem("expectedColorIndex")) || 0;
+var score = parseInt(localStorage.getItem("score")) || 0;
+
+//var startPopup = document.querySelector("#start-popup");
+//var startButton = document.querySelector("#start-button");
+
+var correctSound = new Audio("Stinger15.mp3");
+var errorSound = new Audio("wrong.wav");
+
+// if (score === 0 && !window.location.search.includes("color")) {
+//   startPopup.style.display = "block";
+// }
+
+// startButton.addEventListener("click", function() {
+//   startPopup.style.display = "none";
+// });
+
+
+function scanQRCode() {
+  var urlParams = new URLSearchParams(window.location.search);
+  var color = urlParams.get("color");
+  
+  if (color === null) {
+    showModal("Starting new game...", function() {
+        resetGame();
+    });
+    return;
+  }
+    showModal("Color detected, click to analyze...", function () {
+        if (color === colors[expectedColorIndex]) {
+            handleCorrectColor();
+        } else {
+            handleWrongColor();
+        }
+    });
+}
+
+function resetGame(){
+  expectedColorIndex = 0;
+  score = 0;
+  
+  localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+  localStorage.setItem("score", score.toString());
+
+  updateGameState();
+}
+
+function handleCorrectColor() {
+  
+  correctSound.play();
+  
+  expectedColorIndex++;
+  score++;
+  
+  localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+  localStorage.setItem("score", score.toString());
+  
+  updateGameState();
+  
+  if (expectedColorIndex >= colors.length) {
+    showModal("You won!", function() {
+      expectedColorIndex = 0;
+      score = 0;
+      
+      localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+      localStorage.setItem("score", score.toString());
+      
+      updateGameState();
+    });
+    
+    return;
+  }
+  
+  showModal("Correct! On to the next!", function() {
+    
+    updateNextColor();
+  });
+}
+
+function handleWrongColor() {
+    errorSound.play();
+    showModal("Wrong color!", function() {
+    updateNextColor();
+  });
+}
+
+function showModal(message, callback) {
+  var modal = document.createElement("div");
+  modal.classList.add("modal");
+  
+  var modalContent = document.createElement("div");
+  modalContent.classList.add("modal-content");
+  
+  var messageElement = document.createElement("p");
+  messageElement.textContent = message;
+  
+  modalContent.appendChild(messageElement);
+  
+  var okButton = document.createElement("button");
+  okButton.textContent = "OK";
+  okButton.classList.add("modal-button");
+  
+  okButton.addEventListener("click", function() {
+    modal.remove();
+    
+    callback();
+  });
+  
+  modalContent.appendChild(okButton);
+  
+  modal.appendChild(modalContent);
+  
+  document.body.appendChild(modal);
+}
+
+function updateScore() {
+  var scoreElement = document.querySelector(".score");
+  
+  scoreElement.textContent = "SCORE: " + score.toString();
+}
+
+function updateNextColor() {
+  var nextColorElement = document.querySelector(".next-color");
+  
+  if (expectedColorIndex >= colors.length) {
+    nextColorElement.textContent = "You won!";
+    
+    return;
+  }
+  
+  nextColorElement.textContent = "NEXT COLOR:";
+  
+  var colorBlockElement = document.createElement("div");
+  
+  colorBlockElement.classList.add("color-block");
+  
+  colorBlockElement.style.backgroundColor = colors[expectedColorIndex];
+  
+  nextColorElement.appendChild(colorBlockElement);
+}
+
+function updateGameState() {
+  updateScore();
+  
+//   if (score === 0 && !window.location.search.includes("color")) {
+    
+//     return;
+//   }
+  
+
+  
+  updateNextColor();
+}
+
+
+
+console.log("Score: " + score.toString())
+
+scanQRCode();
+updateGameState();
+</script>
