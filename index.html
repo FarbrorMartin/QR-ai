@@ -120,172 +120,198 @@
 
 <h1>Color Scanner</h1>
 
+<div id="video-container">
+  <video id="qr-video"></video>
+</div>
+<button id="startscan-button">Scan</button>
+<button id="stopscan-button">StopScan</button>
 <div class="score"></div>
 
 
 
 <div class="next-color"></div>
 
-<script>
-var colors = ["red", "green", "blue"];
-var expectedColorIndex = parseInt(localStorage.getItem("expectedColorIndex")) || 0;
-var score = parseInt(localStorage.getItem("score")) || 0;
-
-//var startPopup = document.querySelector("#start-popup");
-//var startButton = document.querySelector("#start-button");
-
-var correctSound = new Audio("Stinger15.mp3");
-var errorSound = new Audio("wrong.wav");
-
-// if (score === 0 && !window.location.search.includes("color")) {
-//   startPopup.style.display = "block";
-// }
-
-// startButton.addEventListener("click", function() {
-//   startPopup.style.display = "none";
-// });
-
-
-function scanQRCode() {
-  var urlParams = new URLSearchParams(window.location.search);
-  var color = urlParams.get("color");
-  
-  if (color === null) {
-    showModal("Starting new game...", function() {
-        resetGame();
+<script type="module">
+  import QrScanner from "./qrscan/qr-scanner.min.js";
+  const video = document.querySelector("#qr-video")
+  const scanner = new QrScanner(video, result => {
+    scanner.stop();
+    var url = new URL(result.data);
+    scanQRCode(url.searchParams);
+  }, 
+    {   onDecodeError: error => {
+          console.log(error)
+        },
+        highlightScanRegion: true,
+        highlightCodeOutline: true,
     });
-    return;
+
+  scanner.setCamera("environment");
+  document.querySelector("#startscan-button").addEventListener("click", function(){
+    scanner.start();
+  })
+  document.querySelector("#stopscan-button").addEventListener("click", function(){
+    scanner.stop();
+  })
+  var colors = ["red", "green", "blue"];
+  var expectedColorIndex = parseInt(localStorage.getItem("expectedColorIndex")) || 0;
+  var score = parseInt(localStorage.getItem("score")) || 0;
+
+  //var startPopup = document.querySelector("#start-popup");
+  //var startButton = document.querySelector("#start-button");
+
+  var correctSound = new Audio("Stinger15.mp3");
+  var errorSound = new Audio("wrong.wav");
+
+  // if (score === 0 && !window.location.search.includes("color")) {
+  //   startPopup.style.display = "block";
+  // }
+
+  // startButton.addEventListener("click", function() {
+  //   startPopup.style.display = "none";
+  // });
+
+
+  function scanQRCode(urlParams) {
+    
+    var color = urlParams.get("color");
+    
+    if (color === null) {
+      showModal("Starting new game...", function() {
+          resetGame();
+      });
+      return;
+    }
+      showModal("Color detected, click to analyze...", function () {
+          if (color === colors[expectedColorIndex]) {
+              handleCorrectColor();
+          } else {
+              handleWrongColor();
+          }
+      });
   }
-    showModal("Color detected, click to analyze...", function () {
-        if (color === colors[expectedColorIndex]) {
-            handleCorrectColor();
-        } else {
-            handleWrongColor();
-        }
+
+  function resetGame(){
+    expectedColorIndex = 0;
+    score = 0;
+    
+    localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+    localStorage.setItem("score", score.toString());
+
+    updateGameState();
+  }
+
+  function handleCorrectColor() {
+    
+    correctSound.play();
+    
+    expectedColorIndex++;
+    score++;
+    
+    localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+    localStorage.setItem("score", score.toString());
+    
+    updateGameState();
+    
+    if (expectedColorIndex >= colors.length) {
+      showModal("You won!", function() {
+        expectedColorIndex = 0;
+        score = 0;
+        
+        localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+        localStorage.setItem("score", score.toString());
+        
+        updateGameState();
+      });
+      
+      return;
+    }
+    
+    showModal("Correct! On to the next!", function() {
+      
+      updateNextColor();
     });
-}
+  }
 
-function resetGame(){
-  expectedColorIndex = 0;
-  score = 0;
-  
-  localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
-  localStorage.setItem("score", score.toString());
+  function handleWrongColor() {
+      errorSound.play();
+      showModal("Wrong color!", function() {
+      updateNextColor();
+    });
+  }
 
-  updateGameState();
-}
-
-function handleCorrectColor() {
-  
-  correctSound.play();
-  
-  expectedColorIndex++;
-  score++;
-  
-  localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
-  localStorage.setItem("score", score.toString());
-  
-  updateGameState();
-  
-  if (expectedColorIndex >= colors.length) {
-    showModal("You won!", function() {
-      expectedColorIndex = 0;
-      score = 0;
+  function showModal(message, callback) {
+    var modal = document.createElement("div");
+    modal.classList.add("modal");
+    
+    var modalContent = document.createElement("div");
+    modalContent.classList.add("modal-content");
+    
+    var messageElement = document.createElement("p");
+    messageElement.textContent = message;
+    
+    modalContent.appendChild(messageElement);
+    
+    var okButton = document.createElement("button");
+    okButton.textContent = "OK";
+    okButton.classList.add("modal-button");
+    
+    okButton.addEventListener("click", function() {
+      modal.remove();
       
-      localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
-      localStorage.setItem("score", score.toString());
-      
-      updateGameState();
+      callback();
     });
     
-    return;
+    modalContent.appendChild(okButton);
+    
+    modal.appendChild(modalContent);
+    
+    document.body.appendChild(modal);
   }
-  
-  showModal("Correct! On to the next!", function() {
+
+  function updateScore() {
+    var scoreElement = document.querySelector(".score");
+    
+    scoreElement.textContent = "SCORE: " + score.toString();
+  }
+
+  function updateNextColor() {
+    var nextColorElement = document.querySelector(".next-color");
+    
+    if (expectedColorIndex >= colors.length) {
+      nextColorElement.textContent = "You won!";
+      
+      return;
+    }
+    
+    nextColorElement.textContent = "NEXT COLOR:";
+    
+    var colorBlockElement = document.createElement("div");
+    
+    colorBlockElement.classList.add("color-block");
+    
+    colorBlockElement.style.backgroundColor = colors[expectedColorIndex];
+    
+    nextColorElement.appendChild(colorBlockElement);
+  }
+
+  function updateGameState() {
+    updateScore();
+    
+  //   if (score === 0 && !window.location.search.includes("color")) {
+      
+  //     return;
+  //   }
+    
+
     
     updateNextColor();
-  });
-}
-
-function handleWrongColor() {
-    errorSound.play();
-    showModal("Wrong color!", function() {
-    updateNextColor();
-  });
-}
-
-function showModal(message, callback) {
-  var modal = document.createElement("div");
-  modal.classList.add("modal");
-  
-  var modalContent = document.createElement("div");
-  modalContent.classList.add("modal-content");
-  
-  var messageElement = document.createElement("p");
-  messageElement.textContent = message;
-  
-  modalContent.appendChild(messageElement);
-  
-  var okButton = document.createElement("button");
-  okButton.textContent = "OK";
-  okButton.classList.add("modal-button");
-  
-  okButton.addEventListener("click", function() {
-    modal.remove();
-    
-    callback();
-  });
-  
-  modalContent.appendChild(okButton);
-  
-  modal.appendChild(modalContent);
-  
-  document.body.appendChild(modal);
-}
-
-function updateScore() {
-  var scoreElement = document.querySelector(".score");
-  
-  scoreElement.textContent = "SCORE: " + score.toString();
-}
-
-function updateNextColor() {
-  var nextColorElement = document.querySelector(".next-color");
-  
-  if (expectedColorIndex >= colors.length) {
-    nextColorElement.textContent = "You won!";
-    
-    return;
   }
-  
-  nextColorElement.textContent = "NEXT COLOR:";
-  
-  var colorBlockElement = document.createElement("div");
-  
-  colorBlockElement.classList.add("color-block");
-  
-  colorBlockElement.style.backgroundColor = colors[expectedColorIndex];
-  
-  nextColorElement.appendChild(colorBlockElement);
-}
-
-function updateGameState() {
-  updateScore();
-  
-//   if (score === 0 && !window.location.search.includes("color")) {
-    
-//     return;
-//   }
-  
-
-  
-  updateNextColor();
-}
 
 
 
-console.log("Score: " + score.toString())
+  console.log("Score: " + score.toString())
 
-scanQRCode();
-updateGameState();
+  scanQRCode(new URLSearchParams(window.location.search));
+  updateGameState();
 </script>
