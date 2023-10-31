@@ -26,6 +26,7 @@
       margin: auto;
       margin-top: 50px;
       border-radius: 10px;
+      background-color: #f2f2f2;
     }
     .popup {
       position: fixed;
@@ -132,6 +133,26 @@
       
     }
 
+    .scanned-item-image{
+      border: 5px dashed red;
+      background-size: contain;
+      background-repeat: no-repeat;
+      /* width: 100%; */
+      background-color: #ffed3f;
+      background-origin: content-box;
+      padding: 10px;
+    }
+
+    .image-sword{
+      background-image: url('equipment1.png');
+    }
+    .image-shield{
+      background-image: url('equipment2.png');
+    }
+    .image-helm{
+      background-image: url('equipment3.png');
+    }
+
     .scan-button button img{
       width: 100%;
       height: 100%;
@@ -147,6 +168,12 @@
     
     .hidden {
       display: none;
+    }
+
+    .centered-75{
+      width:256px;
+      margin: 50px auto;
+      display: inline-flex;
     }
 
   </style>
@@ -172,14 +199,27 @@
 <div class="score"></div>
 
 
+<div id="encounter-image-container">
+  <img id="encounter-image" class="centered-75">
+</div>
 
-<div class="next-color"></div>
+<div class="next-color">
+  <div id="color-block" class="color-block scanned-item-image image-sword"></div>
+</div>
+
+<div id="qrcode0" class="centered-75"></div>
+<div id="qrcode1" class="centered-75"></div>
+<div id="qrcode2" class="centered-75"></div>
+<div id="qrcode3" class="centered-75"></div>
+<div id="qrcode4" class="centered-75"></div>
+<div id="qrcode5" class="centered-75"></div>
 
 <script type="module">
   import QrScanner from "./qrscan/qr-scanner.min.js";
   const video = document.querySelector("#qr-video")
   const videoContainer = document.querySelector("#video-container")
   const scanButton = document.querySelector("#toggle-scan-button")
+  const colorBlock = document.querySelector("#color-block");
   const scanner = new QrScanner(video, result => {
     scanner.stop();
     var url = new URL(result.data);
@@ -199,7 +239,13 @@
   //   scanner.stop();
   // })
   var colors = ["red", "green", "blue"];
-  var expectedColorIndex = parseInt(localStorage.getItem("expectedColorIndex")) || 0;
+  var encounters = ["bandit", "coins", "diamond", "coins", "coins"];
+
+  var longArray = [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,];
+
+
+  var lastScannedCode = parseInt(localStorage.getItem("lastScannedCode")) || 0;
+  var expectedColorIndex = 1;
   var score = parseInt(localStorage.getItem("score")) || 0;
 
   //var startPopup = document.querySelector("#start-popup");
@@ -210,11 +256,15 @@
 
   // if (score === 0 && !window.location.search.includes("color")) {
   //   startPopup.style.display = "block";
-  // }
+
 
   // startButton.addEventListener("click", function() {
   //   startPopup.style.display = "none";
   // });
+
+    function shuffle(array) {
+    array.sort(() => Math.random() - 0.5);
+  }
 
   function toggleScanner(){
     if (videoContainer.classList.contains("hidden")){
@@ -241,28 +291,49 @@
 
   function scanQRCode(urlParams) {
     setScannerState(false);
-    var color = urlParams.get("color");
-    
-    if (color === null) {
+    //var color = urlParams.get("color");
+    var location = urlParams.get("location");
+    if (location === null) {
       showModal("Starting new game...", function() {
           resetGame();
       });
       return;
     }
-      showModal("Color detected, click to analyze...", function () {
-          if (color === colors[expectedColorIndex]) {
-              handleCorrectColor();
-          } else {
-              handleWrongColor();
-          }
+      showModal("Klicka för söka igenom platsen!", function () {
+          handleEncounter(location);
+          
+          // if (color === colors[expectedColorIndex]) {
+          //     handleCorrectColor();
+          // } else {
+          //     handleWrongColor();
+          // }
       });
   }
 
+    function handleEncounter(location) {
+      var encounter = encounters[location];
+      if (encounter == "coins") {
+        showModal("Du hittade pengar!");
+      }
+      else if (encounter == "diamond") {
+        showModal("Du hittade diamanten! Skynda dig tillbaka till start!");
+      }
+      else if (encounter == "bandit") {
+        showModal("Ånej! En bandit rånar dig!");
+      }
+      else {
+        showModal("Det var ingenting här... :(");
+
+      }
+    }
+
+ 
+
   function resetGame(){
-    expectedColorIndex = 0;
-    score = 0;
+    lastScannedCode = 0;
+    score 
     
-    localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+    localStorage.setItem("lastScannedCode", lastScannedCode.toString());
     localStorage.setItem("score", score.toString());
 
     updateGameState();
@@ -272,20 +343,20 @@
     
     correctSound.play();
     
-    expectedColorIndex++;
+    lastScannedCode++;
     score++;
     
-    localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+    localStorage.setItem("lastScannedCode", lastScannedCode.toString());
     localStorage.setItem("score", score.toString());
     
     updateGameState();
     
-    if (expectedColorIndex >= colors.length) {
+    if (lastScannedCode >= colors.length) {
       showModal("You won!", function() {
-        expectedColorIndex = 0;
+        lastScannedCode = 0;
         score = 0;
         
-        localStorage.setItem("expectedColorIndex", expectedColorIndex.toString());
+        localStorage.setItem("lastScannedCode", lastScannedCode.toString());
         localStorage.setItem("score", score.toString());
         
         updateGameState();
@@ -343,26 +414,24 @@
   }
 
   function updateNextColor() {
+    expectedColorIndex = (lastScannedCode+1)%colors.length;
     var nextColorElement = document.querySelector(".next-color");
     
-    if (expectedColorIndex >= colors.length) {
-      nextColorElement.textContent = "You won!";
+    // if (expectedColorIndex >= colors.length) {
+    //   nextColorElement.textContent = "You won!";
       
-      return;
-    }
+    //   return;
+    // }
     
-    nextColorElement.textContent = "NEXT COLOR:";
+   // nextColorElement.textContent = "NEXT COLOR:";
     
-    var colorBlockElement = document.createElement("div");
+    colorBlock.style.backgroundColor = colors[expectedColorIndex];
     
-    colorBlockElement.classList.add("color-block");
-    
-    colorBlockElement.style.backgroundColor = colors[expectedColorIndex];
-    
-    nextColorElement.appendChild(colorBlockElement);
+   
   }
 
   function updateGameState() {
+    
     updateScore();
     
   //   if (score === 0 && !window.location.search.includes("color")) {
@@ -381,4 +450,26 @@
 
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
+  // var arr = new URLSearchParams("arr="+JSON.stringify(colors)).get("arr");
+  // if (arr){
+  //   var cols = JSON.parse(arr);
+  //   for (var col in cols){
+  //     console.log(cols[col]);
+  //   }
+  // }
+
+  //   for (var i in encounters){
+  //   // Create a new QRCode object with the div element and the game URL
+  //     var qrcode = new QRCode(document.getElementById("qrcode"+i.toString()), {
+  //     text: "http://localhost:8080/index.html?location="+i.toString(),
+  //    // text: "https://farbrormartin.github.io/QR-ai?location="+i.toString(),
+  //     width: 256,
+  //     height: 256,
+  //     colorDark : "#0040b0",
+  //     colorLight : "#ffffff",
+  //     correctLevel : QRCode.CorrectLevel.H
+  //   });
+  // }
 </script>
+
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
