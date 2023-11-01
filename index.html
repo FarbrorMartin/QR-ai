@@ -462,9 +462,12 @@
   function updateScore() {
     var moneyElement = document.querySelector("#money");
     moneyElement.textContent = "PENGAR: " + money.toString();
+    var foundDiamondElement = document.querySelector("#found-diamond");
     if (foundDiamond){
-      var foundDiamondElement = document.querySelector("#found-diamond");
       foundDiamondElement.textContent = "Du hittade diamanten!";
+    }
+    else{
+      foundDiamondElement.textContent = "";
     }
     
 
