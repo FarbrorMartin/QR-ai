@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <title>Color Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -213,7 +217,9 @@
 </div>
 
 <div class="next-color">
-  <div id="color-block" class="color-block scanned-item-image "></div>
+  <div id="color-block" class="color-block scanned-item-image ">
+    <div class="image-bandit"></div>
+  </div>
 </div>
 
 <div id="qrcodeContainer" ></div>
@@ -230,6 +236,12 @@
   const scanButton = document.querySelector("#toggle-scan-button")
   const colorBlock = document.querySelector("#color-block");
   //const encounter-image = document.querySelector("#encounter-image");
+
+  const coinsImage = "url('coins.jfif')";
+  const diamondImage = "url('diamond.jfif')";
+  const banditImage = "url('bandit.jfif')";
+
+  
   const scanner = new QrScanner(video, result => {
     scanner.stop();
     var url = new URL(result.data);
@@ -274,7 +286,11 @@
 
   var correctSound = new Audio("Stinger15.mp3");
   var errorSound = new Audio("wrong.wav");
-
+  var banditSound = new Audio("Stinger16.mp3");
+  var coinsSound = new Audio("Coins_Drop_Carpet_05.wav");
+  var diamondSound = new Audio("Stinger_1.mp3");
+  var whistleSound = new Audio("whistle.wav");
+  var finishGameSound = new Audio("Stinger_13.mp3");
   // if (score === 0 && !window.location.search.includes("color")) {
   //   startPopup.style.display = "block";
 
@@ -318,6 +334,7 @@
       handleStartScanned();
     }
     else if(visitedLocations.indexOf(location) !== -1){
+      errorSound.play();
         return;
       }
     else {
@@ -338,6 +355,7 @@
         gameState = GAME_FINISHED;
         updateGameState();
         saveState();
+        finishGameSound.play();
 
       }
       else {
@@ -346,6 +364,7 @@
           gameState = GAME_IN_PROGRESS;
           startTime = new Date().getTime();
           saveState();
+          whistleSound.play();
         });
       }
     }
@@ -354,25 +373,27 @@
       var shufffledLoc = shuffledLocations[location];
       var encounter = encounters[shufffledLoc];
       if (encounter == "coins") {
-        showModal("Du hittade pengar!");
-        money += 100;
-        colorBlock.classList.add("image-coins");
+        showModal("Du hittade 1000 kronor!");
+        money += 1000;
+        colorBlock.style.backgroundImage = coinsImage;
+        coinsSound.play()
       }
       else if (encounter == "diamond") {
         showModal("Du hittade diamanten! Skynda dig tillbaka till start!");
-          money += 1000;
+          money += 10000;
           foundDiamond = true;
-          colorBlock.classList.add("image-diamond");
-
+          colorBlock.style.backgroundImage = diamondImage;
+          diamondSound.play()
       }
       else if (encounter == "bandit") {
-        showModal("Ånej! En bandit stjäl alla dina pengar!");
+        showModal("Ånej! En bandit stal alla dina pengar!");
         money = 0;
-        colorBlock.classList.add("image-bandit");
+        colorBlock.style.backgroundImage = banditImage;
+        banditSound.play();
       }
       else {
         showModal("Det var ingenting här... :(");
-        
+        errorSound.play();
       }
       visitedLocations.push(location);
      //updateGameState();
