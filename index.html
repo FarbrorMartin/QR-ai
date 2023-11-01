@@ -331,13 +331,14 @@
           foundDiamond = true;
       }
       else if (encounter == "bandit") {
-        showModal("Ånej! En bandit rånar dig!");
-        money += 100
+        showModal("Ånej! En bandit stjäl alla dina pengar!");
+        money = 0;
       }
       else {
         showModal("Det var ingenting här... :(");
       }
      //updateGameState();
+      saveState();
       updateScore();
     }
 
@@ -412,7 +413,7 @@
   function updateScore() {
     var scoreElement = document.querySelector(".score");
     
-    scoreElement.textContent = "SCORE: " + score.toString();
+    scoreElement.textContent = "PENGAR: " + money.toString();
   }
 
   function updateNextColor() {
@@ -436,14 +437,7 @@
     
     updateScore();
     
-  //   if (score === 0 && !window.location.search.includes("color")) {
-      
-  //     return;
-  //   }
-    
 
-    
-    updateNextColor();
   }
 
   function renderQRCode(element, text, color){
