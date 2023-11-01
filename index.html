@@ -203,8 +203,8 @@
     
   </button>
 </div>
-<div class="score"></div>
-
+<div id="money" class="score"></div>
+<div id="finish-time" class="score"></div>
 
 <div id="encounter-image-container">
   <img id="encounter-image" class="centered-75">
@@ -254,6 +254,7 @@
   var lastScannedCode = parseInt(localStorage.getItem("lastScannedCode")) || 0;
   var expectedColorIndex = 1;
   var score = parseInt(localStorage.getItem("score")) || 0;
+  var finishTime = 0;
 
   const GAME_NOT_STARTED = 0;
   const GAME_IN_PROGRESS = 1;
@@ -322,8 +323,8 @@
 
     function handleStartScanned() {
       if (gameState == GAME_IN_PROGRESS) {
-        var timeSpent =  new Date().getTime() - startTime;
-        var timeInSeconds = timeSpent / 1000;
+        finishTime =  new Date().getTime() - startTime;
+        var timeInSeconds = finishTime / 1000;
         var seconds = Math.floor(timeInSeconds % 60);
         var minutes = Math.floor(seconds / 60);
         showModal("Du blev klar på " + minutes + " min och " + seconds + " sek!")
@@ -449,9 +450,17 @@
   }
 
   function updateScore() {
-    var scoreElement = document.querySelector(".score");
+    var moneyElement = document.querySelector("#money");
     
-    scoreElement.textContent = "PENGAR: " + money.toString();
+    
+    moneyElement.textContent = "PENGAR: " + money.toString();
+    if (gameState == GAME_FINISHED){
+        var finishTimeElement = document.querySelector("#finish-time");
+        var timeInSeconds = finishTime / 1000;
+        var seconds = Math.floor(timeInSeconds % 60);
+        var minutes = Math.floor(seconds / 60);
+        finishTimeElement.textContent = "TID: " + minutes + "m "+seconds +"s"; 
+    }
   }
 
   function updateNextColor() {
