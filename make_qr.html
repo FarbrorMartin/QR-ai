@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Grid Layout</title>
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 400px);
+      grid-gap: 30px;
+    }
+
+    .item {
+      margin: auto;
+      padding: 40px;
+      border: 3px solid black;
+    }
+
+    .item p {
+      font-size: 60px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="qr-code-container" class="grid">
+
+  </div>
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script>
+  function renderQRCode(element, text, color){
+    var qrcode = new QRCode(element, {
+      text: text,
+      width: 256,
+      height: 256,
+      colorDark : color,
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+    });
+  }
+    function createQrElement(qrText, color, labelText = null) {
+        // Create a new QRCode object with the div element and the game URL
+        var query = (qrText != null) ? "?location=" + qrText : "";
+        var elementName = "#qrcode" + qrText;
+        var qrElement = document.createElement("div");
+        qrElement.classList.add("item");
+        qrElement.id = elementName;
+        document.querySelector("#qr-code-container").appendChild(qrElement);
+        if (labelText == null) {
+            labelText = qrText;
+        }
+        var label = document.createElement("p")
+        label.textContent = labelText;
+        qrElement.appendChild(label);
+
+        var url = "https://farbrormartin.github.io/QR-ai";
+        //var url = "http://localhost:8080/index.html";
+
+        renderQRCode(qrElement, url + query, color);
+        var urlLabel = document.createElement("div")
+        urlLabel.textContent = url;
+        qrElement.appendChild(urlLabel);
+
+
+    }
+
+  createQrElement(null, "#000000", "Start");
+
+  for (var i= 0; i< 9;i++){
+     createQrElement(i.toString(), "#00b040");
+    }
+</script>
