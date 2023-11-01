@@ -204,7 +204,9 @@
   </button>
 </div>
 <div id="money" class="score"></div>
+<div id="foundDiamond" class="score"></div>
 <div id="finish-time" class="score"></div>
+
 
 <div id="encounter-image-container">
   <img id="encounter-image" class="centered-75">
@@ -249,7 +251,8 @@
   var colors = ["red", "green", "blue"];
   var encounters = ["bandit", "diamond", "coins", "coins", "coins", "coins", "coins"];
 
-  var shuffledLocations;
+  var shuffledLocations = [];
+  var visitedLocations = [];
 
   var lastScannedCode = parseInt(localStorage.getItem("lastScannedCode")) || 0;
   var expectedColorIndex = 1;
@@ -314,6 +317,9 @@
     if (location === null) {
       handleStartScanned();
     }
+    else if(visitedLocations.indexOf(location) !== -1){
+        return;
+      }
     else {
       showModal("Klicka för söka igenom platsen!", function () {
           handleEncounter(location);
@@ -368,6 +374,7 @@
         showModal("Det var ingenting här... :(");
         
       }
+      visitedLocations.push(location);
      //updateGameState();
       saveState();
       updateScore();
@@ -385,6 +392,7 @@
     money = 0;
     foundDiamond = false;
     shuffledLocations = [];
+    visitedLocations = [];
     for (var i in encounters){
       shuffledLocations.push(i);
     }
@@ -396,6 +404,7 @@
 
   function saveState(){
     localStorage.setItem("shuffledLocations", JSON.stringify(shuffledLocations));
+    localStorage.setItem("visitedLocations", JSON.stringify(visitedLocations));
     localStorage.setItem("gameState", gameState.toString());
     localStorage.setItem("money", money.toString());
     localStorage.setItem("foundDiamond", foundDiamond.toString());
@@ -413,6 +422,7 @@
     }
 
     shuffledLocations = JSON.parse(localStorage.getItem("shuffledLocations"));
+    visitedLocations = JSON.parse(localStorage.getItem("visitedLocations"));
     money = parseInt(localStorage.getItem("money")) || 0;
     foundDiamond = localStorage.getItem("foundDiamond") == "true";
     startTime = parseFloat(localStorage.getItem("startTime"));
@@ -451,9 +461,13 @@
 
   function updateScore() {
     var moneyElement = document.querySelector("#money");
-    
-    
     moneyElement.textContent = "PENGAR: " + money.toString();
+    if (foundDiamond){
+      var foundDiamondElement = document.querySelector("#diamond-found");
+      foundDiamondElement.textContent = "Du hittade diamanten!";
+    }
+    
+
     if (gameState == GAME_FINISHED){
         var finishTimeElement = document.querySelector("#finish-time");
         var timeInSeconds = finishTime / 1000;
