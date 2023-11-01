@@ -351,11 +351,11 @@
         var seconds = Math.floor(timeInSeconds % 60);
         var minutes = Math.floor(seconds / 60);
         showModal("Du blev klar på " + minutes + " min och " + seconds + " sek!")
-
+        finishGameSound.play();
         gameState = GAME_FINISHED;
         updateGameState();
         saveState();
-        finishGameSound.play();
+        
 
       }
       else {
