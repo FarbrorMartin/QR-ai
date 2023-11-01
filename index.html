@@ -312,12 +312,12 @@
     var location = urlParams.get("location");
     if (location === null) {
       handleStartScanned();
-      return;
-
     }
+    else {
       showModal("Klicka för söka igenom platsen!", function () {
           handleEncounter(location);
       });
+    }
   }
 
     function handleStartScanned() {
@@ -388,6 +388,8 @@
       shuffledLocations.push(i);
     }
     shuffle(shuffledLocations);
+   
+    startTime = new Date().getTime();
     saveState();
   }
 
