@@ -143,16 +143,15 @@
       padding: 10px;
     }
 
-    .image-sword{
-      background-image: url('equipment1.png');
+    .image-coins{
+      background-image: url('coins.jfif');
     }
-    .image-shield{
-      background-image: url('equipment2.png');
+    .image-diamond{
+      background-image: url('diamond.jfif');
     }
-    .image-helm{
-      background-image: url('equipment3.png');
+    .image-bandit{
+      background-image: url('bandit.jfif');
     }
-
     .scan-button button img{
       width: 100%;
       height: 100%;
@@ -212,7 +211,7 @@
 </div>
 
 <div class="next-color">
-  <div id="color-block" class="color-block scanned-item-image image-sword"></div>
+  <div id="color-block" class="color-block scanned-item-image "></div>
 </div>
 
 <div id="qrcodeContainer" ></div>
@@ -228,6 +227,7 @@
   const videoContainer = document.querySelector("#video-container")
   const scanButton = document.querySelector("#toggle-scan-button")
   const colorBlock = document.querySelector("#color-block");
+  //const encounter-image = document.querySelector("#encounter-image");
   const scanner = new QrScanner(video, result => {
     scanner.stop();
     var url = new URL(result.data);
@@ -255,12 +255,15 @@
   var expectedColorIndex = 1;
   var score = parseInt(localStorage.getItem("score")) || 0;
 
-  const GAME_NOT_INITIALIZED = 0;
-  const GAME_INITIALIZED = 1;
+  const GAME_NOT_STARTED = 0;
+  const GAME_IN_PROGRESS = 1;
+  const GAME_FINISHED = 2;
 
-  var gameState = GAME_NOT_INITIALIZED;
+  var gameState = GAME_NOT_STARTED;
   var money = 0;
   var foundDiamond = false;
+
+  var startTime = new Date().getTime();
 
   //var startPopup = document.querySelector("#start-popup");
   //var startButton = document.querySelector("#start-button");
@@ -308,15 +311,37 @@
 
     var location = urlParams.get("location");
     if (location === null) {
-      showModal("Starting new game...", function() {
-          resetGame();
-      });
+      handleStartScanned();
       return;
+
     }
       showModal("Klicka för söka igenom platsen!", function () {
           handleEncounter(location);
       });
   }
+
+    function handleStartScanned() {
+      if (gameState == GAME_IN_PROGRESS) {
+        var timeSpent =  new Date().getTime() - startTime;
+        var timeInSeconds = timeSpent / 1000;
+        var seconds = Math.floor(timeInSeconds % 60);
+        var minutes = Math.floor(seconds / 60);
+        showModal("Du blev klar på " + minutes + " min och " + seconds + " sek!")
+
+        gameState = GAME_FINISHED;
+        updateGameState();
+        saveState();
+
+      }
+      else {
+        showModal("Tryck på OK för att starta ett nytt spel.", function () {
+          resetGame();
+          gameState = GAME_IN_PROGRESS;
+          startTime = new Date().getTime();
+          saveState();
+        });
+      }
+    }
 
     function handleEncounter(location) {
       var shufffledLoc = shuffledLocations[location];
@@ -324,18 +349,23 @@
       if (encounter == "coins") {
         showModal("Du hittade pengar!");
         money += 100;
+        colorBlock.classList.add("image-coins");
       }
       else if (encounter == "diamond") {
         showModal("Du hittade diamanten! Skynda dig tillbaka till start!");
           money += 1000;
           foundDiamond = true;
+          colorBlock.classList.add("image-diamond");
+
       }
       else if (encounter == "bandit") {
         showModal("Ånej! En bandit stjäl alla dina pengar!");
         money = 0;
+        colorBlock.classList.add("image-bandit");
       }
       else {
         showModal("Det var ingenting här... :(");
+        
       }
      //updateGameState();
       saveState();
@@ -350,7 +380,7 @@
   }
 
   function resetState(){
-    gameState = GAME_INITIALIZED;
+    gameState = GAME_NOT_STARTED;
     money = 0;
     foundDiamond = false;
     shuffledLocations = [];
@@ -366,17 +396,23 @@
     localStorage.setItem("gameState", gameState.toString());
     localStorage.setItem("money", money.toString());
     localStorage.setItem("foundDiamond", foundDiamond.toString());
+    localStorage.setItem("startTime", startTime.toString());
   }
 
   function loadState(){
-    gameState = localStorage.getItem("gameState") == "1"? GAME_INITIALIZED : GAME_NOT_INITIALIZED;
-    if (gameState == GAME_NOT_INITIALIZED){
+    var parsedGameState = parseInt(localStorage.getItem("gameState"));
+    if (parsedGameState == null){
       resetState();
       return false;
     }
+    else{
+      gameState = parsedGameState;
+    }
+
     shuffledLocations = JSON.parse(localStorage.getItem("shuffledLocations"));
     money = parseInt(localStorage.getItem("money")) || 0;
     foundDiamond = localStorage.getItem("foundDiamond") == "true";
+    startTime = parseFloat(localStorage.getItem("startTime"));
     return true;
   }
 
@@ -452,13 +488,13 @@
   }
 
 
-  console.log("Score: " + score.toString())
+  
 
   loadState();
 
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
-
+  console.log("Gamestate: " + gameState.toString())
   
   // var arr = new URLSearchParams("arr="+JSON.stringify(colors)).get("arr");
   // if (arr){
