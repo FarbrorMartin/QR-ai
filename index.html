@@ -470,13 +470,15 @@
       foundDiamondElement.textContent = "";
     }
     
-
+    var finishTimeElement = document.querySelector("#finish-time");
     if (gameState == GAME_FINISHED){
-        var finishTimeElement = document.querySelector("#finish-time");
         var timeInSeconds = finishTime / 1000;
         var seconds = Math.floor(timeInSeconds % 60);
         var minutes = Math.floor(seconds / 60);
         finishTimeElement.textContent = "TID: " + minutes + "m "+seconds +"s"; 
+    }
+    else{
+      finishTimeElement.textContent = "";
     }
   }
 
