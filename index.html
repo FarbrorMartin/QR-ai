@@ -255,10 +255,10 @@
   var expectedColorIndex = 1;
   var score = parseInt(localStorage.getItem("score")) || 0;
 
-  const GAME_NOT_STARTED = 0;
-  const GAME_STARTED = 1;
+  const GAME_NOT_INITIALIZED = 0;
+  const GAME_INITIALIZED = 1;
 
-  var gameState = GAME_NOT_STARTED;
+  var gameState = GAME_NOT_INITIALIZED;
   var money = 0;
   var foundDiamond = false;
 
@@ -305,7 +305,7 @@
 
   function scanQRCode(urlParams) {
     setScannerState(false);
-    //var color = urlParams.get("color");
+
     var location = urlParams.get("location");
     if (location === null) {
       showModal("Starting new game...", function() {
@@ -315,33 +315,27 @@
     }
       showModal("Klicka för söka igenom platsen!", function () {
           handleEncounter(location);
-          
-          // if (color === colors[expectedColorIndex]) {
-          //     handleCorrectColor();
-          // } else {
-          //     handleWrongColor();
-          // }
       });
   }
 
     function handleEncounter(location) {
-      var encounter = encounters[location];
+      var shufffledLoc = shuffledLocations[location];
+      var encounter = encounters[shufffledLoc];
       if (encounter == "coins") {
         showModal("Du hittade pengar!");
         money += 100;
       }
       else if (encounter == "diamond") {
         showModal("Du hittade diamanten! Skynda dig tillbaka till start!");
-        money += 1000;
-        foundDiamond = true;
+          money += 1000;
+          foundDiamond = true;
       }
       else if (encounter == "bandit") {
         showModal("Ånej! En bandit rånar dig!");
-        money = 0;
+        money += 100
       }
       else {
         showModal("Det var ingenting här... :(");
-
       }
      //updateGameState();
       updateScore();
@@ -355,11 +349,12 @@
   }
 
   function resetState(){
-    gameState = GAME_NOT_STARTED;
+    gameState = GAME_INITIALIZED;
     money = 0;
     foundDiamond = false;
-    for (i in encounters){
-      shuffledLocations.append(i);
+    shuffledLocations = [];
+    for (var i in encounters){
+      shuffledLocations.push(i);
     }
     shuffle(shuffledLocations);
     saveState();
@@ -373,53 +368,15 @@
   }
 
   function loadState(){
-    gameState = localStorage.getItem("gameState") == "1"? GAME_STARTED : GAME_NOT_STARTED;
-    if (gameState == GAME_NOT_STARTED){
+    gameState = localStorage.getItem("gameState") == "1"? GAME_INITIALIZED : GAME_NOT_INITIALIZED;
+    if (gameState == GAME_NOT_INITIALIZED){
+      resetState();
       return false;
     }
     shuffledLocations = JSON.parse(localStorage.getItem("shuffledLocations"));
     money = parseInt(localStorage.getItem("money")) || 0;
-    foundDiamond = parseBool(localStorage.getItem("foundDiamond"))|| false;
+    foundDiamond = localStorage.getItem("foundDiamond") == "true";
     return true;
-  }
-
-  function handleCorrectColor() {
-    
-    correctSound.play();
-    
-    lastScannedCode++;
-    score++;
-    
-    localStorage.setItem("lastScannedCode", lastScannedCode.toString());
-    localStorage.setItem("score", score.toString());
-    
-    updateGameState();
-    
-    if (lastScannedCode >= colors.length) {
-      showModal("You won!", function() {
-        lastScannedCode = 0;
-        score = 0;
-        
-        localStorage.setItem("lastScannedCode", lastScannedCode.toString());
-        localStorage.setItem("score", score.toString());
-        
-        updateGameState();
-      });
-      
-      return;
-    }
-    
-    showModal("Correct! On to the next!", function() {
-      
-      updateNextColor();
-    });
-  }
-
-  function handleWrongColor() {
-      errorSound.play();
-      showModal("Wrong color!", function() {
-      updateNextColor();
-    });
   }
 
   function showModal(message, callback) {
@@ -440,8 +397,9 @@
     
     okButton.addEventListener("click", function() {
       modal.remove();
-      
-      callback();
+      if (callback) {
+        callback();
+      }
     });
     
     modalContent.appendChild(okButton);
@@ -501,6 +459,8 @@
 
 
   console.log("Score: " + score.toString())
+
+  loadState();
 
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
