@@ -4,7 +4,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <link rel="manifest" href="./site.webmanifest">
   <title>Color Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -377,6 +377,8 @@
         money += 1000;
         colorBlock.style.backgroundImage = coinsImage;
         coinsSound.play();
+        saveState();
+      updateScore();
       });
     }
     else if (encounter == "diamond") {
@@ -385,6 +387,8 @@
         foundDiamond = true;
         colorBlock.style.backgroundImage = diamondImage;
         diamondSound.play();
+        saveState();
+        updateScore();
       });
     }
     else if (encounter == "bandit") {
@@ -392,6 +396,8 @@
       money = Math.max(money-3000, 0);
       colorBlock.style.backgroundImage = banditImage;
       banditSound.play();
+      saveState();
+      updateScore();
       });
     }
     else {
@@ -401,8 +407,8 @@
     }
     visitedLocations.push(location);
     //updateGameState();
-    saveState();
-    updateScore();
+    // saveState();
+    // updateScore();
   }
 
  
