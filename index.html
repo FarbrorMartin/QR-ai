@@ -170,10 +170,18 @@
       display: none;
     }
 
-    .centered-75{
+    .centered-margin{
       width:256px;
       margin: 50px auto;
-      display: inline-flex;
+      display: block;
+    }
+
+    .centered-padding{
+      text-align: center;
+      font-size: xx-large;
+      font-weight: 700;
+      margin: 0 auto;
+      padding: 20px;
     }
 
   </style>
@@ -207,12 +215,12 @@
   <div id="color-block" class="color-block scanned-item-image image-sword"></div>
 </div>
 
-<div id="qrcode0" class="centered-75"></div>
-<div id="qrcode1" class="centered-75"></div>
+<div id="qrcodeContainer" ></div>
+<!-- <div id="qrcode1" class="centered-75"></div>
 <div id="qrcode2" class="centered-75"></div>
 <div id="qrcode3" class="centered-75"></div>
 <div id="qrcode4" class="centered-75"></div>
-<div id="qrcode5" class="centered-75"></div>
+<div id="qrcode5" class="centered-75"></div> -->
 
 <script type="module">
   import QrScanner from "./qrscan/qr-scanner.min.js";
@@ -239,14 +247,20 @@
   //   scanner.stop();
   // })
   var colors = ["red", "green", "blue"];
-  var encounters = ["bandit", "coins", "diamond", "coins", "coins"];
+  var encounters = ["bandit", "diamond", "coins", "coins", "coins", "coins", "coins"];
 
-  var longArray = [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,];
-
+  var shuffledLocations;
 
   var lastScannedCode = parseInt(localStorage.getItem("lastScannedCode")) || 0;
   var expectedColorIndex = 1;
   var score = parseInt(localStorage.getItem("score")) || 0;
+
+  const GAME_NOT_STARTED = 0;
+  const GAME_STARTED = 1;
+
+  var gameState = GAME_NOT_STARTED;
+  var money = 0;
+  var foundDiamond = false;
 
   //var startPopup = document.querySelector("#start-popup");
   //var startButton = document.querySelector("#start-button");
@@ -314,29 +328,59 @@
       var encounter = encounters[location];
       if (encounter == "coins") {
         showModal("Du hittade pengar!");
+        money += 100;
       }
       else if (encounter == "diamond") {
         showModal("Du hittade diamanten! Skynda dig tillbaka till start!");
+        money += 1000;
+        foundDiamond = true;
       }
       else if (encounter == "bandit") {
         showModal("Ånej! En bandit rånar dig!");
+        money = 0;
       }
       else {
         showModal("Det var ingenting här... :(");
 
       }
+     //updateGameState();
+      updateScore();
     }
 
  
 
   function resetGame(){
-    lastScannedCode = 0;
-    score 
-    
-    localStorage.setItem("lastScannedCode", lastScannedCode.toString());
-    localStorage.setItem("score", score.toString());
-
+    resetState()
     updateGameState();
+  }
+
+  function resetState(){
+    gameState = GAME_NOT_STARTED;
+    money = 0;
+    foundDiamond = false;
+    for (i in encounters){
+      shuffledLocations.append(i);
+    }
+    shuffle(shuffledLocations);
+    saveState();
+  }
+
+  function saveState(){
+    localStorage.setItem("shuffledLocations", JSON.stringify(shuffledLocations));
+    localStorage.setItem("gameState", gameState.toString());
+    localStorage.setItem("money", money.toString());
+    localStorage.setItem("foundDiamond", foundDiamond.toString());
+  }
+
+  function loadState(){
+    gameState = localStorage.getItem("gameState") == "1"? GAME_STARTED : GAME_NOT_STARTED;
+    if (gameState == GAME_NOT_STARTED){
+      return false;
+    }
+    shuffledLocations = JSON.parse(localStorage.getItem("shuffledLocations"));
+    money = parseInt(localStorage.getItem("money")) || 0;
+    foundDiamond = parseBool(localStorage.getItem("foundDiamond"))|| false;
+    return true;
   }
 
   function handleCorrectColor() {
@@ -444,12 +488,24 @@
     updateNextColor();
   }
 
+  function renderQRCode(element, text, color){
+    var qrcode = new QRCode(element, {
+      text: text,
+      width: 256,
+      height: 256,
+      colorDark : color,
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+    });
+  }
 
 
   console.log("Score: " + score.toString())
 
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
+
+  
   // var arr = new URLSearchParams("arr="+JSON.stringify(colors)).get("arr");
   // if (arr){
   //   var cols = JSON.parse(arr);
@@ -460,16 +516,29 @@
 
   //   for (var i in encounters){
   //   // Create a new QRCode object with the div element and the game URL
-  //     var qrcode = new QRCode(document.getElementById("qrcode"+i.toString()), {
-  //     text: "http://localhost:8080/index.html?location="+i.toString(),
-  //    // text: "https://farbrormartin.github.io/QR-ai?location="+i.toString(),
-  //     width: 256,
-  //     height: 256,
-  //     colorDark : "#0040b0",
-  //     colorLight : "#ffffff",
-  //     correctLevel : QRCode.CorrectLevel.H
-  //   });
-  // }
+  //     var url = "https://farbrormartin.github.io/QR-ai";
+  //     //var url = "http://localhost:8080/index.html";
+  //     var query = "?location="+i.toString();
+  //     var elementName = "#qrcode"+i.toString()
+  //     var qrElement = document.createElement("div");
+  //     qrElement.classList.add("centered-margin");
+  //     qrElement.id =elementName;
+  //     document.querySelector("#qrcodeContainer").appendChild(qrElement);
+      
+  //   //renderQRCode("qrcode"+i.toString(),  url+query,"#0402b0" );
+  
+  //   renderQRCode(qrElement, url+query,"#00b040" );
+  //   var label = document.createElement("div")
+  //   label.textContent=url;
+  //   //label.classList.add("centered-padding");
+  //   qrElement.appendChild(label);
+  //   var label = document.createElement("div")
+  //   label.textContent=i.toString();
+  //   label.classList.add("centered-padding");
+  //   qrElement.appendChild(label);
+    
+    
+  }
 </script>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
