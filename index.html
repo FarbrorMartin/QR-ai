@@ -442,7 +442,7 @@ function startNewGame(locationList){
         gameState = GAME_IN_PROGRESS;
         startTime = new Date().getTime();
         saveState();
-        renderQRCode(colorBlock, JSON.stringify(shuffledLocations), "#000000");
+        renderQRCodeGameSeed(colorBlock, JSON.stringify(shuffledLocations), "#000000");
         whistleSound.play();
 }
 
@@ -724,9 +724,10 @@ function startNewGame(locationList){
 
   }
 
-  function renderQRCode(element, text, color){
+  function renderQRCodeGameSeed(element, text, color){
+    var url = "https://farbrormartin.github.io/QR-ai";
     var qrcode = new QRCode(element, {
-      text: text,
+      text: url+"?gameseed="+text,
       width: 200,
       height: 200,
       colorDark : color,
