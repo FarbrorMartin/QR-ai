@@ -418,7 +418,7 @@
       finishTime =  new Date().getTime() - startTime;
       var timeInSeconds = finishTime / 1000;
       var seconds = Math.floor(timeInSeconds % 60);
-      var minutes = Math.floor(seconds / 60);
+      var minutes = Math.floor(timeInSeconds / 60);
       showModal("Du blev klar på " + minutes + " min och " + seconds + " sek!", function() {
         finishGameSound.play();
         gameState = GAME_FINISHED;
