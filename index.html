@@ -264,6 +264,7 @@
         //console.log("Scanning: " + isProcessingScanResult.toString() );
         var url = new URL(result.data);
         scanQRCode(url.searchParams);
+        scanner.stop()
       }
     },
       {
@@ -469,7 +470,7 @@ function handleEncounterBing(location) {
 
   function scanQRCode(urlParams) {
     console.log("IS SCANNING:" + isProcessingScanResult.toString());
-
+    scanner.stop()
     setTimeout(() => {
       setScannerState(false); // Hide scanner after action is finished (e.g., 2 seconds delay)
       
@@ -480,7 +481,7 @@ function handleEncounterBing(location) {
       }
       else if (visitedLocations.indexOf(location) !== -1) {
         errorSound.play();
-        return;
+        
       }
       else {
         showModal("Klicka för söka igenom platsen!", function () {
