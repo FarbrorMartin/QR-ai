@@ -5,21 +5,25 @@
   <style>
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 400px);
-      grid-gap: 30px;
+      grid-template-columns: repeat(4, 356px);
+      grid-gap: 5px;
     }
 
     .item {
       margin: auto;
-      padding: 40px;
+      padding: 30px;
       border: 3px solid black;
     }
 
     .item p {
-      font-size: 60px;
-      font-family: Arial, Helvetica, sans-serif;
-      font-weight: bold;
-      text-align: center;
+        margin: 20px;
+        font-size: 60px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bold;
+        text-align: center;
+    }
+    .page-break-before {
+        break-before: page;
     }
   </style>
 </head>
@@ -27,15 +31,80 @@
   <div id="qr-code-container" class="grid">
 
   </div>
+  <br style="break-before: page; break-after: page;">
 </body>
 </html>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
+function randomWebColor() {
+  // Generate a random hue value between 0 and 360 (degrees).
+  const hue = Math.floor(Math.random() * 361);
+
+  // Set a fixed saturation value (you can adjust this as needed).
+  const saturation = 85;
+
+  // Generate a random lightness value around 60% (between 50% and 70%).
+  const lightness = Math.floor(Math.random() * 21) + 30;
+
+  // Convert HSL values to an RGB color.
+  const rgbColor = hslToRgb(hue, saturation, lightness);
+
+  // Convert RGB values to a hex color code.
+  const hexColor = rgbToHex(rgbColor.r, rgbColor.g, rgbColor.b);
+
+  return hexColor;
+}
+
+function hslToRgb(h, s, l) {
+  h /= 360;
+  s /= 100;
+  l /= 100;
+
+  let r, g, b;
+
+  if (s === 0) {
+    r = g = b = l; // Achromatic
+  } else {
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  return {
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255),
+  };
+}
+
+function rgbToHex(r, g, b) {
+  const toHex = (c) => {
+    const hex = c.toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  };
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+
+
   function renderQRCode(element, text, color){
     var qrcode = new QRCode(element, {
       text: text,
-      width: 256,
-      height: 256,
+      width: 300,
+      height: 300,
       colorDark : color,
       colorLight : "#ffffff",
       correctLevel : QRCode.CorrectLevel.H
@@ -63,13 +132,14 @@
         var urlLabel = document.createElement("div")
         urlLabel.textContent = url;
         qrElement.appendChild(urlLabel);
+        
 
 
     }
 
   createQrElement(null, "#000000", "Start");
 
-  for (var i= 0; i< 9;i++){
-     createQrElement(i.toString(), "#00b040");
+  for (var i= 1; i<= 20;i++){
+     createQrElement(i.toString(), randomWebColor());
     }
 </script>
