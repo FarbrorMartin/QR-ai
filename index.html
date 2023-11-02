@@ -382,12 +382,11 @@
     setTimeout(() => {
       setScannerState(false); // Hide scanner after action is finished (e.g., 2 seconds delay)
       var gameSeed = urlParams.get("gameseed");
+      var location = urlParams.get("location");
       if (gameSeed !== null){
         handleSeedScanned(gameSeed);
       }
-
-      var location = urlParams.get("location");
-      if (location === null || location === "start") {
+      else if (location === null || location === "start") {
         handleStartScanned();
       }
       else if (visitedLocations.indexOf(location) !== -1) {
