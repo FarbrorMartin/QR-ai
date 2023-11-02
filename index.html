@@ -381,6 +381,9 @@
     setTimeout(() => {
       setScannerState(false); // Hide scanner after action is finished (e.g., 2 seconds delay)
       var location = urlParams.get("location");
+      if (location !== null){
+        location -= 1;
+      }
       if (location === null) {
         handleStartScanned();
       }
@@ -658,7 +661,7 @@
     if (gameState == GAME_FINISHED){
         var timeInSeconds = finishTime / 1000;
         var seconds = Math.floor(timeInSeconds % 60);
-        var minutes = Math.floor(seconds / 60);
+        var minutes = Math.floor(timeInSeconds / 60);
         finishTimeElement.textContent = "TID: " + minutes + "m "+seconds +"s"; 
     }
     else{
