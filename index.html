@@ -5,7 +5,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="./site.webmanifest">
-  <title>Color Scanner</title>
+  <title>Försvunna diamanten</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -211,7 +211,7 @@
   <button id="start-button">Start</button>
 </div> -->
 
-<h1>Color Scanner</h1>
+<h1>Försvunna Diamanten</h1>
 
 <div id="video-container" class="hidden" >
   <video id="qr-video" class="video-feed" </video>
@@ -237,7 +237,7 @@
   </div>
 </div>
 
-<div id="qrcodeContainer" ></div>
+<div id="qrcode-container" ></div>
 <!-- <div id="qrcode1" class="centered-75"></div>
 <div id="qrcode2" class="centered-75"></div>
 <div id="qrcode3" class="centered-75"></div>
@@ -251,6 +251,7 @@
   const scanButton = document.querySelector("#toggle-scan-button")
   const colorBlock = document.querySelector("#color-block");
   const banditContainer = document.querySelector("#bandit-marker-container");
+  const qrcodeContainer = document.querySelector("#qrcode-container");
   //const encounter-image = document.querySelector("#encounter-image");
 
   const coinsImage = "url('coins.jfif')";
@@ -380,6 +381,11 @@
     scanner.stop()
     setTimeout(() => {
       setScannerState(false); // Hide scanner after action is finished (e.g., 2 seconds delay)
+      var gameSeed = urlParams.get("gameseed");
+      if (gameSeed !== null){
+        handleSeedScanned(gameSeed);
+      }
+
       var location = urlParams.get("location");
       if (location === null || location === "start") {
         handleStartScanned();
@@ -394,6 +400,18 @@
       }
       isProcessingScanResult = false; // Reset the flag
     }, scanHideShowDelay);
+  }
+
+  function handleSeedScanned(seed){
+    try {
+      var parsedArray = JSON.parse(seed);
+      startNewGame(parsedArray);
+      
+    
+    } catch (error) {
+        showModal("Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod.");
+    }
+    
   }
 
   function handleStartScanned() {
@@ -412,14 +430,22 @@
     }
     else {
       showModal("Tryck på OK för att starta ett nytt spel.", function () {
-        resetGame();
-        gameState = GAME_IN_PROGRESS;
-        startTime = new Date().getTime();
-        saveState();
-        whistleSound.play();
+        startNewGame();
       });
     }
   }
+
+function startNewGame(locationList){
+        resetGame();
+        //if there was a locationlist supplied, use that, otherwise keep the random one set in resetGame
+        shuffledLocations = locationList ?? shuffledLocations;
+
+        gameState = GAME_IN_PROGRESS;
+        startTime = new Date().getTime();
+        saveState();
+        renderQRCode(colorBlock, JSON.stringify(shuffledLocations), "#000000");
+        whistleSound.play();
+}
 
 // Modify the handleEncounter function to add a bandit marker instead of losing money
   function handleEncounterBing(location) {
@@ -702,8 +728,8 @@
   function renderQRCode(element, text, color){
     var qrcode = new QRCode(element, {
       text: text,
-      width: 256,
-      height: 256,
+      width: 200,
+      height: 200,
       colorDark : color,
       colorLight : "#ffffff",
       correctLevel : QRCode.CorrectLevel.H
