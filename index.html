@@ -381,9 +381,6 @@
     setTimeout(() => {
       setScannerState(false); // Hide scanner after action is finished (e.g., 2 seconds delay)
       var location = urlParams.get("location");
-      if (location !== null){
-        location -= 1;
-      }
       if (location === null) {
         handleStartScanned();
       }
