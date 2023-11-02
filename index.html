@@ -186,7 +186,21 @@
       margin: 0 auto;
       padding: 20px;
     }
+/* Bing */
+    .bandit-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
 
+.bandit-marker {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  background-image: url('bandit.jfif');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
   </style>
 </head>
 <body>
@@ -206,19 +220,20 @@
   <button id="toggle-scan-button" class="scan-button">
     
   </button>
+  
 </div>
+
 <div id="money" class="score"></div>
 <div id="found-diamond" class="score"></div>
 <div id="finish-time" class="score"></div>
 
-
+<div id="bandit-marker-container" class="bandit-container"></div>
 <div id="encounter-image-container">
   <img id="encounter-image" class="centered-75">
 </div>
 
 <div class="next-color">
   <div id="color-block" class="color-block scanned-item-image ">
-    <div class="image-bandit"></div>
   </div>
 </div>
 
@@ -235,6 +250,7 @@
   const videoContainer = document.querySelector("#video-container")
   const scanButton = document.querySelector("#toggle-scan-button")
   const colorBlock = document.querySelector("#color-block");
+  const banditContainer = document.querySelector("#bandit-marker-container");
   //const encounter-image = document.querySelector("#encounter-image");
 
   const coinsImage = "url('coins.jfif')";
@@ -242,18 +258,26 @@
   const banditImage = "url('bandit.jfif')";
 
   
-  const scanner = new QrScanner(video, result => {
-    scanner.stop();
-    var url = new URL(result.data);
-    scanQRCode(url.searchParams);
-  }, 
-    {   onDecodeError: error => {
+    const scanner = new QrScanner(video, result => {
+      if (!isProcessingScanResult) {
+        isProcessingScanResult = true;
+        //console.log("Scanning: " + isProcessingScanResult.toString() );
+        var url = new URL(result.data);
+        scanQRCode(url.searchParams);
+      }
+    },
+      {
+        onDecodeError: error => {
           console.log(error)
         },
         highlightScanRegion: true,
         highlightCodeOutline: true,
-    });
+      });
 
+
+
+// Add a flag to indicate whether a scan result is being processed
+ let isProcessingScanResult = false;
   scanner.setCamera("environment");
   scanButton.addEventListener("click", toggleScanner)
   // document.querySelector("#stopscan-button").addEventListener("click", function(){
@@ -271,13 +295,22 @@
   var score = parseInt(localStorage.getItem("score")) || 0;
   var finishTime = 0;
 
+
+
+
+
   const GAME_NOT_STARTED = 0;
   const GAME_IN_PROGRESS = 1;
   const GAME_FINISHED = 2;
 
+  const scanHideShowDelay = 500;
+
   var gameState = GAME_NOT_STARTED;
   var money = 0;
   var foundDiamond = false;
+  var banditMarkers = 0;
+
+
 
   var startTime = new Date().getTime();
 
@@ -294,23 +327,117 @@
   // if (score === 0 && !window.location.search.includes("color")) {
   //   startPopup.style.display = "block";
 
+  var state = {
+    gameState: GAME_NOT_STARTED,
+    money: 0,
+    foundDiamond: false,
+    shuffledLocations: [],
+    visitedLocations: [],
+    startTime: new Date().getTime()
+  };
 
   // startButton.addEventListener("click", function() {
   //   startPopup.style.display = "none";
   // });
 
+    // Bing Chat
+      function saveStateObject() {
+        localStorage.setItem("state", JSON.stringify(state));
+      }
+
+      function loadStateObject() {
+        var savedState = localStorage.getItem("state");
+        if (savedState) {
+          state = JSON.parse(savedState);
+          return true;
+        }
+        else {
+          resetState();
+          return false;
+        }
+      }
+
+      function resetStateObject() {
+        Object.assign(state, {
+          gameState: GAME_NOT_STARTED,
+          money: 0,
+          foundDiamond: false,
+          shuffledLocations: [],
+          visitedLocations: [],
+          startTime: new Date().getTime(),
+          banditMarkers: 0
+        });
+      }
+
+
+
+// Modify the handleEncounter function to add a bandit marker instead of losing money
+function handleEncounterBing(location) {
+  var shufffledLoc = shuffledLocations[location];
+  var encounter = encounters[shufffledLoc];
+  if (encounter == "coins") {
+    showModal("Du hittade 1000 kronor!", function() {
+      money += 1000;
+      colorBlock.style.backgroundImage = coinsImage;
+      coinsSound.play();
+      saveState();
+      updateScore();
+    });
+  }
+  else if (encounter == "diamond") {
+    showModal("Du hittade diamanten!! Skynda dig tillbaka till start!", function() {
+      money += 10000;
+      foundDiamond = true;
+      colorBlock.style.backgroundImage = diamondImage;
+      diamondSound.play();
+      saveState();
+      updateScore();
+    });
+  }
+  else if (encounter == "bandit") {
+    showModal("Ånej! En bandit är här!", function() {
+      // Add a bandit marker to the bandit container
+      
+      // Increase the number of bandit markers by one
+      banditMarkers++;
+      // Check if the player has three bandit markers
+      if (banditMarkers == 3) {
+        // Reset the money to zero and clear the bandit container
+        money = 0;
+        banditContainer.innerHTML = "";
+        // Reset the number of bandit markers to zero
+        banditMarkers = 0;
+        // Show a message that the player lost all their money
+        showModal("Du förlorade alla dina pengar!", function() {
+          saveState();
+          updateScore();
+        });
+      }
+      else {
+        // Show a message that the player got a bandit marker
+        showModal("Du fick en banditmärke!", function() {
+          saveState();
+          updateScore();
+        });
+      }
+    });
+  }
+  else {
+    showModal("Det var ingenting här... :(", function() {
+      errorSound.play();
+    });
+  }
+  visitedLocations.push(location);
+}
+
+
+
+
     function shuffle(array) {
     array.sort(() => Math.random() - 0.5);
   }
 
-  function toggleScanner(){
-    if (videoContainer.classList.contains("hidden")){
-      setScannerState(true);
-    }
-    else{
-      setScannerState(false);
-    }
-  }
+
 
   function setScannerState(active){
     if (active){
@@ -326,24 +453,39 @@
   }
 
 
-  function scanQRCode(urlParams) {
-    setScannerState(false);
-
-    var location = urlParams.get("location");
-    if (location === null) {
-      handleStartScanned();
+    function toggleScanner() {
+      if (videoContainer.classList.contains("hidden")) {
+        setScannerState(true);
+        scanner.start(); // Start scanning immediately
+      }
+      else {
+        setScannerState(false);
+      }
     }
-    else if(visitedLocations.indexOf(location) !== -1){
-      errorSound.play();
+
+  function scanQRCode(urlParams) {
+    console.log("IS SCANNING:" + isProcessingScanResult.toString());
+
+    setTimeout(() => {
+      setScannerState(false); // Hide scanner after action is finished (e.g., 2 seconds delay)
+      
+
+      var location = urlParams.get("location");
+      if (location === null) {
+        handleStartScanned();
+      }
+      else if (visitedLocations.indexOf(location) !== -1) {
+        errorSound.play();
         return;
       }
-    else {
-      showModal("Klicka för söka igenom platsen!", function () {
-          handleEncounter(location);
-      });
-    }
+      else {
+        showModal("Klicka för söka igenom platsen!", function () {
+          handleEncounterBing(location);
+        });
+      }
+      isProcessingScanResult = false; // Reset the flag
+    }, scanHideShowDelay);
   }
-
   function handleStartScanned() {
     if (gameState == GAME_IN_PROGRESS) {
       finishTime =  new Date().getTime() - startTime;
@@ -430,6 +572,7 @@
     shuffle(shuffledLocations);
    
     startTime = new Date().getTime();
+    banditMarkers = 0;
     saveState();
   }
 
@@ -440,6 +583,7 @@
     localStorage.setItem("money", money.toString());
     localStorage.setItem("foundDiamond", foundDiamond.toString());
     localStorage.setItem("startTime", startTime.toString());
+    localStorage.setItem("banditsEncountered", banditMarkers.toString());
   }
 
   function loadState(){
@@ -457,6 +601,7 @@
     money = parseInt(localStorage.getItem("money")) || 0;
     foundDiamond = localStorage.getItem("foundDiamond") == "true";
     startTime = parseFloat(localStorage.getItem("startTime"));
+    banditMarkers = parseInt(localStorage.getItem("banditsEncountered")) || 0;
     return true;
   }
 
@@ -513,6 +658,15 @@
     else{
       finishTimeElement.textContent = "";
     }
+    banditContainer.textContent = "";
+    for (var i = 0; i< banditMarkers; i++){
+      var banditImage = document.createElement("img");
+      banditImage.src = "bandit.jfif";
+      banditImage.style.width = "50px";
+      banditImage.style.height = "50px";
+      banditImage.style.marginRight = "10px";
+      banditContainer.appendChild(banditImage);
+    }
   }
 
   function updateNextColor() {
@@ -567,29 +721,6 @@
   //   }
   // }
 
-  //   for (var i in encounters){
-  //   // Create a new QRCode object with the div element and the game URL
-  //     var url = "https://farbrormartin.github.io/QR-ai";
-  //     //var url = "http://localhost:8080/index.html";
-  //     var query = "?location="+i.toString();
-  //     var elementName = "#qrcode"+i.toString()
-  //     var qrElement = document.createElement("div");
-  //     qrElement.classList.add("centered-margin");
-  //     qrElement.id =elementName;
-  //     document.querySelector("#qrcodeContainer").appendChild(qrElement);
-      
-  //   //renderQRCode("qrcode"+i.toString(),  url+query,"#0402b0" );
-  
-  //   renderQRCode(qrElement, url+query,"#00b040" );
-  //   var label = document.createElement("div")
-  //   label.textContent=url;
-  //   //label.classList.add("centered-padding");
-  //   qrElement.appendChild(label);
-  //   var label = document.createElement("div")
-  //   label.textContent=i.toString();
-  //   label.classList.add("centered-padding");
-  //   qrElement.appendChild(label);
-  // }
 </script>
 
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
