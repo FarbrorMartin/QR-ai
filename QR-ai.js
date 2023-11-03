@@ -5,7 +5,45 @@ const GAME_NOT_STARTED = 0;
 const GAME_IN_PROGRESS = 1;
 const GAME_FINISHED = 2;
 const scanHideShowDelay = 500;
-const encounters = ["bandit", "bandit", "bandit", "diamond", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins"];
+const encounters = ["bandit", "bandit", "bandit", "diamond", "ruby", "ruby", "sapphire", "sapphire", "emerald", "emerald", "opal", "opal", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins"];
+const treasures = {
+    diamond: {
+        value: 100,
+        image: "diamond.png",
+        name: "diamanten"
+    },
+    ruby: {
+        value: 50,
+        image: "ruby.png",
+        name: "en rubin"
+    },
+    emerald: {
+        value: 40,
+        image: "emerald.png",
+        name: "en smaragd"
+    },
+    sapphire: {
+        value: 30,
+        image: "sapphire.png",
+        name: "en safir"
+    },
+    topaz: {
+        value: 20,
+        image: "topas.png",
+        name: "en topas"
+    },
+    opal: {
+        value: 10,
+        image: "opal.png",
+        name: "en opal"
+    },
+    coins: {
+        value: 5,
+        image: "coins.jfif",
+        name: "en hög guldmynt"
+    }
+};
+
 
 // Sound initialization
 const correctSound = new Audio("Stinger15.mp3");
@@ -18,7 +56,8 @@ const finishGameSound = new Audio("Stinger_13.mp3");
 
 // Images
 const coinsImage = "url('coins.jfif')";
-const diamondImage = "url('diamond.jfif')";
+const diamondImage = "diamond.png";
+
 const banditImage = "url('bandit.jfif')";
 
 // Global Variables
@@ -268,8 +307,8 @@ function renderQRCodeGameSeed(element, text, color) {
     element.appendChild(innerDiv);
     var qrcode = new QRCode(innerDiv, {
         text: url + "?gameseed=" + text,
-        width: 300,
-        height: 300,
+        width: Math.min(window.innerWidth * 0.6, 300),
+        height: Math.min(window.innerWidth * 0.6, 300),
         colorDark: color,
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
@@ -294,16 +333,9 @@ function handleEncounterBing(location) {
     visitedLocations.push(location);
     var shufffledLoc = shuffledLocations[location];
     var encounter = encounters[shufffledLoc];
-    isItemCollected = false;  
+    //isItemCollected = false;  
 
-    if (encounter == "coins") {
-        colorBlock.style.backgroundImage = coinsImage;
-        foundItem = "coins";  // Set the found item
-    } else if (encounter == "diamond") {
-        colorBlock.style.backgroundImage = diamondImage;
-        foundItem = "diamond";  // Set the found item
-    }
-    else if (encounter == "bandit") {
+    if (encounter == "bandit") {
         showModal("Ånej! En bandit är här!", function () {
             banditMarkers++;
             if (banditMarkers == 3) {
@@ -323,11 +355,26 @@ function handleEncounterBing(location) {
             }
         });
     }
+    else if (encounters.includes(encounter)){
+        handleTreasureFound(encounter);
+    }
     else {
         showModal("Det var ingenting här... :(", function () {
             errorSound.play();
         });
     }
+}
+
+function handleTreasureFound(treasure){
+    let treasureData = treasures[treasure];
+    let treasureValue = getValueForTreasure(treasureData.value);
+    let treasureImg = document.createElement("img");
+    treasureImg.classList.add("treasure-image");
+    treasureImg.src=treasureData.image;
+
+    showModal("Du hittade " + treasureData.name +" värd "+ treasureValue.toString(), () => {
+        coinsSound.play();
+    }, treasureImg );
 }
 
 function collectItem() {
@@ -348,6 +395,15 @@ function collectItem() {
 
     saveState();
     updateScore();
+}
+
+function getValueForTreasure(treasure){
+    if(treasures.hasOwnProperty(treasure)){
+        return treasures[treasure].value;
+    }
+    else{
+        return 0;
+    }
 }
 
 function handleStartScanned() {
