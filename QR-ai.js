@@ -1,6 +1,5 @@
-import QrScanner from "./qrscan/qr-scanner.min.js";
-try{
 "use strict";
+import QrScanner from "./qrscan/qr-scanner.min.js";
 // Constants
 const GAME_NOT_STARTED = 0;
 const GAME_IN_PROGRESS = 1;
@@ -389,7 +388,3 @@ loadState();
 scanQRCode(new URLSearchParams(window.location.search));
 updateGameState();
 console.log("Gamestate: " + gameState.toString());
-}
-catch (exception){
-    console.log(exception);
-}
