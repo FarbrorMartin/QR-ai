@@ -96,11 +96,15 @@ function startNewGame(locationList) {
     shuffledLocations = locationList ?? shuffledLocations;
     gameState = GAME_IN_PROGRESS;
     startTime = new Date().getTime();
-    renderQRCodeGameSeed(colorBlock, JSON.stringify(shuffledLocations), "#000000");
+
+    var qrCodeContainer = document.createElement("div");
+    renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
+    
+    showModal("Tryck på OK för att börja spela.", null, qrCodeContainer, "Andra spelare kan skanna QR-koden här för att spela samma bana.");
     whistleSound.play();
 }
 
-function showModal(message, callback) {
+function showModal(message, callback, element, secondMessage) {
     var modal = document.createElement("div");
     modal.classList.add("modal");
 
@@ -109,8 +113,19 @@ function showModal(message, callback) {
 
     var messageElement = document.createElement("p");
     messageElement.textContent = message;
-
     modalContent.appendChild(messageElement);
+
+    if (secondMessage){
+        var secondMessageElement = document.createElement("p");
+        secondMessageElement.textContent = secondMessage;
+        secondMessageElement.style.fontSize = "30px";
+        modalContent.appendChild(secondMessageElement);
+
+    }
+
+    if (element) {
+        modalContent.appendChild(element);
+    }
 
     var okButton = document.createElement("button");
     okButton.textContent = "OK";
@@ -253,8 +268,8 @@ function renderQRCodeGameSeed(element, text, color) {
     element.appendChild(innerDiv);
     var qrcode = new QRCode(innerDiv, {
         text: url + "?gameseed=" + text,
-        width: 200,
-        height: 200,
+        width: 300,
+        height: 300,
         colorDark: color,
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
@@ -337,9 +352,7 @@ function collectItem() {
 
 function handleStartScanned() {
     if (gameState === GAME_NOT_STARTED || gameState === GAME_FINISHED) {
-        showModal("Tryck OK för att starta!", function () {
-            startNewGame();
-        });
+         startNewGame();
     } else if (gameState === GAME_IN_PROGRESS) {
         finishTime = new Date().getTime() - startTime;
         var timeInSeconds = finishTime / 1000;
