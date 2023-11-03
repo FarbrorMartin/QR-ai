@@ -89,14 +89,7 @@ function scanQRCode(urlParams) {
     }, scanHideShowDelay);
 }
 
-function handleSeedScanned(seed) {
-    try {
-        const parsedArray = JSON.parse(seed);
-        startNewGame(parsedArray);
-    } catch (error) {
-        showModal("Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod.");
-    }
-}
+
 
 function startNewGame(locationList) {
     resetGame();
@@ -256,6 +249,7 @@ function updateGameState() {
 function renderQRCodeGameSeed(element, text, color) {
     var url = "https://farbrormartin.github.io/QR-ai";
     var innerDiv = document.createElement("div");
+    element.textContent = "";
     element.appendChild(innerDiv);
     var qrcode = new QRCode(innerDiv, {
         text: url + "?gameseed=" + text,
@@ -285,25 +279,14 @@ function handleEncounterBing(location) {
     visitedLocations.push(location);
     var shufffledLoc = shuffledLocations[location];
     var encounter = encounters[shufffledLoc];
+    isItemCollected = false;  
+
     if (encounter == "coins") {
-        showModal("Du hittade 1000 kronor!", function () {
-            money += 1000;
-            colorBlock.textContent = "";
-            colorBlock.style.backgroundImage = coinsImage;
-            coinsSound.play();
-            saveState();
-            updateScore();
-        });
-    }
-    else if (encounter == "diamond") {
-        showModal("Du hittade diamanten!! Skynda dig tillbaka till start!", function () {
-            money += 10000;
-            foundDiamond = true;
-            colorBlock.style.backgroundImage = diamondImage;
-            diamondSound.play();
-            saveState();
-            updateScore();
-        });
+        colorBlock.style.backgroundImage = coinsImage;
+        foundItem = "coins";  // Set the found item
+    } else if (encounter == "diamond") {
+        colorBlock.style.backgroundImage = diamondImage;
+        foundItem = "diamond";  // Set the found item
     }
     else if (encounter == "bandit") {
         showModal("Ånej! En bandit är här!", function () {
@@ -318,7 +301,7 @@ function handleEncounterBing(location) {
                 });
             }
             else {
-                showModal("Du fick en banditmärke!", function () {
+                showModal("Du fick ett banditmärke - tre märken betyder att du !", function () {
                     saveState();
                     updateScore();
                 });
@@ -332,9 +315,29 @@ function handleEncounterBing(location) {
     }
 }
 
+function collectItem() {
+    if (isItemCollected || foundItem === "none" || foundItem === "bandit") return;
+
+    if (foundItem === "coins") {
+        money += 1000;
+        coinsSound.play();
+    } else if (foundItem === "diamond") {
+        money += 10000;
+        foundDiamond = true;
+        diamondSound.play();
+    }
+
+    colorBlock.style.backgroundImage = '';  // Clear image
+    foundItem = "";  // Clear found item
+    isItemCollected = true;  
+
+    saveState();
+    updateScore();
+}
+
 function handleStartScanned() {
     if (gameState === GAME_NOT_STARTED || gameState === GAME_FINISHED) {
-        showModal("Börja leta!", function () {
+        showModal("Tryck OK för att starta!", function () {
             startNewGame();
         });
     } else if (gameState === GAME_IN_PROGRESS) {
@@ -348,6 +351,18 @@ function handleStartScanned() {
             updateGameState();
             saveState();
         });
+    }
+}
+
+function handleSeedScanned(seed) {
+    try {
+        const parsedArray = JSON.parse(seed);
+        showModal("Bana inläst. Tryck på OK för att börja!", ()=>{
+            startNewGame(parsedArray);
+        });
+        
+    } catch (error) {
+        showModal("Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod.");
     }
 }
 
