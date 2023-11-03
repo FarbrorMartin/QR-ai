@@ -100,8 +100,8 @@ function startNewGame(locationList) {
     var qrCodeContainer = document.createElement("div");
     renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
     
-    showModal("Tryck på OK för att börja spela.", null, qrCodeContainer, "Andra spelare kan skanna QR-koden här för att spela samma bana.");
-    whistleSound.play();
+    showModal("Tryck på OK för att starta.", () => whistleSound.play(), qrCodeContainer, "Andra spelare kan skanna QR-koden här för att spela samma bana.");
+    
 }
 
 function showModal(message, callback, element, secondMessage) {
