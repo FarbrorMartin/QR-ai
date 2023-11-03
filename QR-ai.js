@@ -127,7 +127,10 @@ function scanQRCode(urlParams) {
         if (gameSeed !== null) handleSeedScanned(gameSeed);
         else if (location === null || location === "start") handleStartScanned();
         else if (visitedLocations.includes(location)) errorSound.play();
-        else showModal("Klicka för söka igenom platsen!", () => handleEncounterBing(location));
+        else showModal({
+            message: "Klicka för söka igenom platsen!",
+            callback: () => handleEncounterBing(location)
+        });
         isProcessingScanResult = false;
     }, scanHideShowDelay);
 }
@@ -143,11 +146,16 @@ function startNewGame(locationList) {
     var qrCodeContainer = document.createElement("div");
     renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
     
-    showModal("Tryck på OK för att starta.", () => whistleSound.play(), qrCodeContainer, "Andra spelare kan skanna QR-koden här för att spela samma bana.");
+    showModal({
+        message: "Tryck på OK för att starta.",
+        callback: () => whistleSound.play(),
+        element: qrCodeContainer,
+        secondMessage: "Andra spelare kan skanna QR-koden här för att spela samma bana."
+    });
     
 }
 
-function showModal(message, callback, element, buttonText, secondMessage) {
+function showModal(options) {
     var modal = document.createElement("div");
     modal.classList.add("modal");
 
@@ -155,42 +163,39 @@ function showModal(message, callback, element, buttonText, secondMessage) {
     modalContent.classList.add("modal-content");
 
     var messageElement = document.createElement("p");
-    messageElement.textContent = message;
+    messageElement.textContent = options.message;
     modalContent.appendChild(messageElement);
 
-    if (secondMessage){
+    if (options.secondMessage) {
         var secondMessageElement = document.createElement("p");
-        secondMessageElement.textContent = secondMessage;
+        secondMessageElement.textContent = options.secondMessage;
         secondMessageElement.style.fontSize = "30px";
         modalContent.appendChild(secondMessageElement);
-
     }
 
-    if (element) {
-        modalContent.appendChild(element);
+    if (options.element) {
+        modalContent.appendChild(options.element);
     }
 
     var okButton = document.createElement("button");
-    okButton.textContent = "OK";
+    okButton.textContent = options.buttonText ?? "OK";
     okButton.classList.add("modal-button");
 
     okButton.addEventListener("click", function () {
         modal.remove();
-        if (callback) {
-            callback();
+        if (options.callback) {
+            options.callback();
         }
     });
 
     modalContent.appendChild(okButton);
-
     modal.appendChild(modalContent);
-
     document.body.appendChild(modal);
 }
 
 function updateScore() {
     var moneyElement = document.querySelector("#money");
-    moneyElement.textContent = "PENGAR: " + money.toString();
+    moneyElement.textContent = money.toString() +" miljoner";
 
     var foundDiamondElement = document.querySelector("#found-diamond");
     if (foundDiamond) {
@@ -340,22 +345,23 @@ function handleEncounterBing(location) {
     //isItemCollected = false;  
 
     if (encounter == "bandit") {
-        showModal("Ånej! En bandit är här!", function () {
-            banditMarkers++;
-            if (banditMarkers == 3) {
-                money = 0;
-                banditContainer.innerHTML = "";
-                banditMarkers = 0;
-                showModal("Du förlorade alla dina pengar!", function () {
-                    saveState();
-                    updateScore();
-                });
-            }
-            else {
-                showModal("Du fick ett banditmärke - tre märken betyder att du !", function () {
-                    saveState();
-                    updateScore();
-                });
+        showModal({
+            message: "Ånej! En bandit är här!",
+            callback: () => {
+                banditMarkers++;
+                if (banditMarkers == 3) {
+                    state.money = 0;
+                    banditContainer.innerHTML = "";
+                    state.banditMarkers = 0;
+                    showModal({
+                        message: "Du förlorade alla dina pengar!",
+                        callback: () => {
+                            saveState();
+                            updateScore();
+                        }
+                    });
+                }
+                // ... rest of the code
             }
         });
     }
@@ -363,8 +369,11 @@ function handleEncounterBing(location) {
         handleTreasureFound(encounter);
     }
     else {
-        showModal("Det var ingenting här... :(", function () {
-            errorSound.play();
+        showModal({
+            message: "Det var ingenting här... :(",
+            callback: function () {
+                errorSound.play();
+            }
         });
     }
 }
@@ -376,9 +385,18 @@ function handleTreasureFound(treasure){
     treasureImg.classList.add("treasure-image");
     treasureImg.src=treasureData.image;
 
-    showModal("Du hittade " + treasureData.name +" värd "+ treasureValue.toString(), () => {
-        treasureData.sound.play();
-    }, treasureImg );
+    showModal({
+        message: "Du hittade "+ treasureData.name +"!",
+        callback: () => {
+            treasureData.sound.play();
+            money += treasureValue;
+            saveState();
+            updateScore();
+        },
+        element: treasureImg,
+        buttonText: treasureValue.toString()+ " miljoner!"
+
+    });
 }
 
 function collectItem() {
@@ -403,7 +421,12 @@ function collectItem() {
 
 function getValueForTreasure(treasure){
     if(treasures.hasOwnProperty(treasure)){
-        return treasures[treasure].value;
+        let originalValue = treasures[treasure].value;
+        let randRange = 0.2;
+        let randomFactor = (Math.random() * 2*randRange)-randRange;
+        
+        let randomizedValue = originalValue + originalValue*randomFactor;
+        return Math.round(randomizedValue);
     }
     else{
         return 0;
@@ -418,11 +441,14 @@ function handleStartScanned() {
         var timeInSeconds = finishTime / 1000;
         var seconds = Math.floor(timeInSeconds % 60);
         var minutes = Math.floor(timeInSeconds / 60);
-        showModal("Du blev klar på " + minutes + " min och " + seconds + " sek!", function () {
-            finishGameSound.play();
-            gameState = GAME_FINISHED;
-            updateGameState();
-            saveState();
+        showModal({
+            message: "Du blev klar på " + minutes + " min och " + seconds + " sek!",
+            callback: function () {
+                finishGameSound.play();
+                gameState = GAME_FINISHED;
+                updateGameState();
+                saveState();
+            }
         });
     }
 }
@@ -430,12 +456,17 @@ function handleStartScanned() {
 function handleSeedScanned(seed) {
     try {
         const parsedArray = JSON.parse(seed);
-        showModal("Bana inläst. Tryck på OK för att börja!", ()=>{
-            startNewGame(parsedArray);
+        showModal({
+            message: "Bana inläst. Tryck på OK för att börja!",
+            callback: () => {
+                startNewGame(parsedArray);
+            }
         });
         
     } catch (error) {
-        showModal("Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod.");
+        showModal({
+            message:"Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod."
+        });
     }
 }
 
