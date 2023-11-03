@@ -255,7 +255,9 @@ function updateGameState() {
 
 function renderQRCodeGameSeed(element, text, color) {
     var url = "https://farbrormartin.github.io/QR-ai";
-    var qrcode = new QRCode(element, {
+    var innerDiv = document.createElement("div");
+    element.appendChild(innerDiv);
+    var qrcode = new QRCode(innerDiv, {
         text: url + "?gameseed=" + text,
         width: 200,
         height: 200,
@@ -286,6 +288,7 @@ function handleEncounterBing(location) {
     if (encounter == "coins") {
         showModal("Du hittade 1000 kronor!", function () {
             money += 1000;
+            colorBlock.textContent = "";
             colorBlock.style.backgroundImage = coinsImage;
             coinsSound.play();
             saveState();
