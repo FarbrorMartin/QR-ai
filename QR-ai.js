@@ -5,45 +5,6 @@ const GAME_NOT_STARTED = 0;
 const GAME_IN_PROGRESS = 1;
 const GAME_FINISHED = 2;
 const scanHideShowDelay = 500;
-const encounters = ["bandit", "bandit", "bandit", "diamond", "ruby", "ruby", "sapphire", "sapphire", "emerald", "emerald", "opal", "opal", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins"];
-const treasures = {
-    diamond: {
-        value: 100,
-        image: "diamond.png",
-        name: "diamanten"
-    },
-    ruby: {
-        value: 50,
-        image: "ruby.png",
-        name: "en rubin"
-    },
-    emerald: {
-        value: 40,
-        image: "emerald.png",
-        name: "en smaragd"
-    },
-    sapphire: {
-        value: 30,
-        image: "sapphire.png",
-        name: "en safir"
-    },
-    topaz: {
-        value: 20,
-        image: "topas.png",
-        name: "en topas"
-    },
-    opal: {
-        value: 10,
-        image: "opal.png",
-        name: "en opal"
-    },
-    coins: {
-        value: 5,
-        image: "coins.jfif",
-        name: "en hög guldmynt"
-    }
-};
-
 
 // Sound initialization
 const correctSound = new Audio("Stinger15.mp3");
@@ -51,14 +12,57 @@ const errorSound = new Audio("wrong.wav");
 const banditSound = new Audio("Stinger16.mp3");
 const coinsSound = new Audio("Coins_Drop_Carpet_05.wav");
 const diamondSound = new Audio("Stinger_1.mp3");
+const gemSound = new Audio("Glass_2.wav");
 const whistleSound = new Audio("whistle.wav");
 const finishGameSound = new Audio("Stinger_13.mp3");
 
 // Images
 const coinsImage = "url('coins.jfif')";
 const diamondImage = "diamond.png";
-
 const banditImage = "url('bandit.jfif')";
+
+// treasures
+const encounters = ["bandit", "bandit", "bandit", "diamond", "ruby", "ruby", "sapphire", "sapphire", "emerald", "emerald", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins"];
+const treasures = {
+    diamond: {
+        value: 100,
+        image: "diamond.png",
+        name: "diamanten",
+        sound: diamondSound
+    },
+    ruby: {
+        value: 50,
+        image: "ruby.png",
+        name: "en rubin",
+        sound: gemSound,
+    },
+    emerald: {
+        value: 40,
+        image: "emerald.png",
+        name: "en smaragd",
+        sound: gemSound,
+    },
+    sapphire: {
+        value: 30,
+        image: "sapphire.png",
+        name: "en safir",
+        sound: gemSound,
+    },
+    topaz: {
+        value: 20,
+        image: "topas.png",
+        name: "en topas",
+        sound: gemSound,
+    },
+    coins: {
+        value: 5,
+        image: "coins.jfif",
+        name: "en hög guldmynt",
+        sound: coinsSound,
+    }
+};
+
+
 
 // Global Variables
 let gameState = GAME_NOT_STARTED;
@@ -143,7 +147,7 @@ function startNewGame(locationList) {
     
 }
 
-function showModal(message, callback, element, secondMessage) {
+function showModal(message, callback, element, buttonText, secondMessage) {
     var modal = document.createElement("div");
     modal.classList.add("modal");
 
@@ -367,13 +371,13 @@ function handleEncounterBing(location) {
 
 function handleTreasureFound(treasure){
     let treasureData = treasures[treasure];
-    let treasureValue = getValueForTreasure(treasureData.value);
+    let treasureValue = getValueForTreasure(treasure);
     let treasureImg = document.createElement("img");
     treasureImg.classList.add("treasure-image");
     treasureImg.src=treasureData.image;
 
     showModal("Du hittade " + treasureData.name +" värd "+ treasureValue.toString(), () => {
-        coinsSound.play();
+        treasureData.sound.play();
     }, treasureImg );
 }
 
