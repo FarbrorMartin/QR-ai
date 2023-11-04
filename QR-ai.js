@@ -138,6 +138,7 @@ function scanQRCode(urlParams) {
 
 
 function startNewGame(locationList) {
+
     resetGame();
     shuffledLocations = locationList ?? shuffledLocations;
     gameState = GAME_IN_PROGRESS;
@@ -152,7 +153,17 @@ function startNewGame(locationList) {
         element: qrCodeContainer,
         secondMessage: "Andra spelare kan skanna QR-koden här för att spela samma bana."
     });
-    
+
+
+    if (window.location.hostname == "localhost"){
+        console.log("Test mode");
+        if (window.location.hostname == "localhost"){
+            shuffledLocations = [];
+            for (var i in encounters) {
+                shuffledLocations.push(i);
+            }
+        }
+    }
 }
 
 function showModal(options) {
@@ -356,12 +367,17 @@ function handleEncounterBing(location) {
                     showModal({
                         message: "Du förlorade alla dina pengar!",
                         callback: () => {
+                            money = 0;
                             saveState();
                             updateScore();
                         }
                     });
                 }
-                // ... rest of the code
+                else{
+                    saveState();
+                    updateScore(); 
+                }
+                
             }
         });
     }
