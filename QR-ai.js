@@ -502,6 +502,7 @@ function trace(message){
 }
 
 // Initialization
+trace("initializing");
 loadState();
 scanQRCode(new URLSearchParams(window.location.search));
 updateGameState();
