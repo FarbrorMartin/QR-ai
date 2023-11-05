@@ -14,7 +14,7 @@ const banditSound = new Audio("Stinger16.mp3");
 const coinsSound = new Audio("Coins_Drop_Carpet_05.wav");
 const diamondSound = new Audio("Stinger_1.mp3");
 const gemSound = new Audio("Glass_2.wav");
-const whistleSound = new Audio("whistle.wav");
+const whistleSound = new Audio("whistle2.wav");
 const finishGameSound = new Audio("Stinger_13.mp3");
 
 // Images
