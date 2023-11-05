@@ -280,11 +280,11 @@ function loadState() {
     }
 
     shuffledLocations = JSON.parse(localStorage.getItem("shuffledLocations"));
-    visitedLocations = JSON.parse(localStorage.getItem("visitedLocations"));
-    money = parseInt(localStorage.getItem("money")) || 0;
+    visitedLocations = JSON.parse(localStorage.getItem("visitedLocations")) ?? [];
+    money = parseInt(localStorage.getItem("money")) ?? 0;
     foundDiamond = localStorage.getItem("foundDiamond") == "true";
     startTime = parseFloat(localStorage.getItem("startTime"));
-    banditMarkers = parseInt(localStorage.getItem("banditsEncountered")) || 0;
+    banditMarkers = parseInt(localStorage.getItem("banditsEncountered")) ?? 0;
     return true;
 }
 
