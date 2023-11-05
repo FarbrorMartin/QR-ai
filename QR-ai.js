@@ -16,11 +16,10 @@ const diamondSound = new Audio("Stinger_1.mp3");
 const gemSound = new Audio("Glass_2.wav");
 const whistleSound = new Audio("whistle2.wav");
 const finishGameSound = new Audio("Stinger_13.mp3");
+const clickSound = new Audio("clicky button low.wav");
 
 // Images
-const coinsImage = "url('coins.jfif')";
-const diamondImage = "diamond.png";
-const banditImage = "url('bandit.jfif')";
+const banditImage = "bandit.jfif";
 
 // treasures
 const encounters = ["bandit", "bandit", "bandit", "diamond", "ruby", "ruby", "sapphire", "sapphire", "emerald", "emerald", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins"];
@@ -358,33 +357,8 @@ function handleEncounterBing(location) {
     //isItemCollected = false;  
     trace(encounter);
     if (encounter == "bandit") {
-        showModal({
-            message: "Ånej! En bandit är här!",
-            callback: () => {
-                banditMarkers++;
-                if (banditMarkers == 3) {
-                    banditSound.play();
-                    state.money = 0;
-                    banditContainer.innerHTML = "";
-                    state.banditMarkers = 0;
-                    showModal({
-                        message: "Du förlorade alla dina pengar!",
-                        callback: () => {
-                            money = 0;
-                            saveState();
-                            updateScore();
-                            
-                        }
-                    });
-                }
-                else{
-                    banditSound.play();
-                    saveState();
-                    updateScore(); 
-                }
-                
-            }
-        });
+       trace("bandit");
+       handleBandit();
     }
     else if (encounters.includes(encounter)){
         trace("treasure");
@@ -400,23 +374,56 @@ function handleEncounterBing(location) {
     }
 }
 
+function handleBandit(){
+    banditMarkers++;
+    banditSound.play();
+    let banditImg = document.createElement("img");
+    banditImg.classList.add("treasure-image");
+    banditImg.src=banditImage;
+    if (banditMarkers == 3) {
+        money = 0;
+        banditContainer.innerHTML = "";
+        banditMarkers = 0;
+        showModal({
+            message: "Banditer! De stjäl alla dina pengar! :(",
+            element: banditImg,
+            callback: () => {
+                money = 0;
+                saveState();
+                updateScore();
+            }
+        });
+    }
+    else{
+        showModal({
+            message: "Banditer! Du flyr i sista sekunden!",
+            element: banditImg,
+            callback: () => {
+                saveState();
+                updateScore();
+            }
+        });
+    }
+}
+
 function handleTreasureFound(treasure){
     let treasureData = treasures[treasure];
     let treasureValue = getValueForTreasure(treasure);
     let treasureImg = document.createElement("img");
     treasureImg.classList.add("treasure-image");
     treasureImg.src=treasureData.image;
+    treasureData.sound.play();
     trace("handle treasure");
     showModal({
         message: "Du hittade "+ treasureData.name +"!",
         callback: () => {
-            treasureData.sound.play();
+            
             money += treasureValue;
             saveState();
             updateScore();
         },
         element: treasureImg,
-        buttonText: treasureValue.toString()+ " miljoner!"
+        secondMessage: treasureValue.toString()+ "kr!"
 
     });
 }
@@ -443,12 +450,13 @@ function collectItem() {
 
 function getValueForTreasure(treasure){
     if(treasures.hasOwnProperty(treasure)){
-        let originalValue = treasures[treasure].value;
-        let randRange = 0.2;
-        let randomFactor = (Math.random() * 2*randRange)-randRange;
+        return treasures[treasure].value *1000;
+        // let originalValue = treasures[treasure].value;
+        // let randRange = 0.2;
+        // let randomFactor = (Math.random() * 2*randRange)-randRange;
         
-        let randomizedValue = originalValue + originalValue*randomFactor;
-        return Math.round(randomizedValue);
+        // let randomizedValue = originalValue + originalValue*randomFactor;
+        // return Math.round(randomizedValue);
     }
     else{
         return 0;
@@ -501,6 +509,9 @@ function trace(message){
     el.textContent=message;
     document.querySelector("body").appendChild(el);
 }
+
+
+document.querySelector("button").addEventListener("click", () => clickSound.play());
 
 // Initialization
 trace("initializing");
