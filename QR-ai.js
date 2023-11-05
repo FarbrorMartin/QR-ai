@@ -271,7 +271,7 @@ function resetStateObject() {
 
 function loadState() {
     var parsedGameState = parseInt(localStorage.getItem("gameState"));
-    if (parsedGameState == null) {
+    if (parsedGameState == NaN) {
         resetState();
         return false;
     }
