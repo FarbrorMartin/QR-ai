@@ -145,6 +145,16 @@ function startNewGame(locationList) {
     gameState = GAME_IN_PROGRESS;
     startTime = new Date().getTime();
 
+    if (window.location.hostname == "localhost"){
+        trace("Testmode");
+        if (window.location.hostname == "localhost"){
+            shuffledLocations = [];
+            for (var i in encounters) {
+                shuffledLocations.push(i);
+            }
+        }
+    }
+
     var qrCodeContainer = document.createElement("div");
     renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
     
@@ -156,15 +166,7 @@ function startNewGame(locationList) {
     });
 
 
-    if (window.location.hostname == "localhost"){
-        console.log("Test mode");
-        if (window.location.hostname == "localhost"){
-            shuffledLocations = [];
-            for (var i in encounters) {
-                shuffledLocations.push(i);
-            }
-        }
-    }
+
 }
 
 function showModal(options) {
@@ -322,6 +324,7 @@ function updateGameState() {
 }
 
 function renderQRCodeGameSeed(element, text, color) {
+    trace("rendering");
     var url = "https://farbrormartin.github.io/QR-ai";
     var innerDiv = document.createElement("div");
     element.textContent = "";
@@ -355,7 +358,7 @@ function handleEncounterBing(location) {
     var shufffledLoc = shuffledLocations[location];
     var encounter = encounters[shufffledLoc];
     //isItemCollected = false;  
-
+    trace(encounter);
     if (encounter == "bandit") {
         showModal({
             message: "Ånej! En bandit är här!",
@@ -383,6 +386,7 @@ function handleEncounterBing(location) {
         });
     }
     else if (encounters.includes(encounter)){
+        trace("treasure");
         handleTreasureFound(encounter);
     }
     else {
@@ -401,7 +405,7 @@ function handleTreasureFound(treasure){
     let treasureImg = document.createElement("img");
     treasureImg.classList.add("treasure-image");
     treasureImg.src=treasureData.image;
-
+    trace("handle treasure");
     showModal({
         message: "Du hittade "+ treasureData.name +"!",
         callback: () => {
@@ -491,14 +495,18 @@ function shuffle(array) {
     array.sort(() => Math.random() - 0.5);
 }
 
+function trace(message){
+    let el = document.createElement("div");
+    el.textContent=message;
+    document.querySelector("body").appendChild(el);
+}
+
 // Initialization
 loadState();
 scanQRCode(new URLSearchParams(window.location.search));
 updateGameState();
-console.log("Gamestate: " + gameState3.toString());
+console.log("Gamestate: " + gameState.toString());
 }
 catch (error){
-    let errorMessage = document.createElement("div");
-    errorMessage.textContent=error;
-    document.querySelector("body").appendChild(errorMessage);
+    trace(error);
 }
