@@ -1,6 +1,6 @@
 "use strict";
 import QrScanner from "./qrscan/qr-scanner.min.js";
-try{
+// try{
 // Constants
 const GAME_NOT_STARTED = 0;
 const GAME_IN_PROGRESS = 1;
@@ -72,9 +72,6 @@ let foundDiamond = false;
 let banditMarkers = 0;
 let shuffledLocations = [];
 let visitedLocations = [];
-let lastScannedCode = parseInt(localStorage.getItem("lastScannedCode")) || 0;
-let expectedColorIndex = 1;
-let score = parseInt(localStorage.getItem("score")) || 0;
 let finishTime = 0;
 let startTime = new Date().getTime();
 let isProcessingScanResult = false;
@@ -147,11 +144,9 @@ function startNewGame(locationList) {
 
     if (window.location.hostname == "localhost"){
         trace("Testmode");
-        if (window.location.hostname == "localhost"){
-            shuffledLocations = [];
-            for (var i in encounters) {
-                shuffledLocations.push(i);
-            }
+        shuffledLocations = [];
+        for (var i in encounters) {
+            shuffledLocations.push(i);
         }
     }
 
@@ -178,12 +173,13 @@ function showModal(options) {
 
     var messageElement = document.createElement("p");
     messageElement.textContent = options.message;
+    messageElement.classList.add("large");
     modalContent.appendChild(messageElement);
 
     if (options.secondMessage) {
         var secondMessageElement = document.createElement("p");
         secondMessageElement.textContent = options.secondMessage;
-        secondMessageElement.style.fontSize = "30px";
+        secondMessageElement.classList.add("small");
         modalContent.appendChild(secondMessageElement);
     }
 
@@ -329,6 +325,7 @@ function renderQRCodeGameSeed(element, text, color) {
     var innerDiv = document.createElement("div");
     element.textContent = "";
     element.appendChild(innerDiv);
+    innerDiv.classList.add("qr-code");
     var qrcode = new QRCode(innerDiv, {
         text: url + "?gameseed=" + text,
         width: Math.min(window.innerWidth * 0.6, 300),
@@ -337,6 +334,7 @@ function renderQRCodeGameSeed(element, text, color) {
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
     });
+    element.querySelector("img").classList.add("qr-code");
 }
 
 function toggleScanner() {
@@ -355,8 +353,8 @@ function setScannerState(active) {
 
 function handleEncounterBing(location) {
     visitedLocations.push(location);
-    var shufffledLoc = shuffledLocations[location];
-    var encounter = encounters[shufffledLoc];
+    let shufffledLoc = shuffledLocations[location];
+    let encounter = encounters[shufffledLoc];
     //isItemCollected = false;  
     trace(encounter);
     if (encounter == "bandit") {
@@ -365,6 +363,7 @@ function handleEncounterBing(location) {
             callback: () => {
                 banditMarkers++;
                 if (banditMarkers == 3) {
+                    banditSound.play();
                     state.money = 0;
                     banditContainer.innerHTML = "";
                     state.banditMarkers = 0;
@@ -374,10 +373,12 @@ function handleEncounterBing(location) {
                             money = 0;
                             saveState();
                             updateScore();
+                            
                         }
                     });
                 }
                 else{
+                    banditSound.play();
                     saveState();
                     updateScore(); 
                 }
@@ -507,7 +508,9 @@ loadState();
 scanQRCode(new URLSearchParams(window.location.search));
 updateGameState();
 console.log("Gamestate: " + gameState.toString());
-}
-catch (error){
-    trace(error);
-}
+//}
+// catch (error){
+//     let el = document.createElement("div");
+//     el.textContent=error;
+//     document.querySelector("body").appendChild(el);
+// }
