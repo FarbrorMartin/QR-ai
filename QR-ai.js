@@ -204,7 +204,7 @@ function showModal(options) {
 
 function updateScore() {
     var moneyElement = document.querySelector("#money");
-    moneyElement.textContent = money.toString() +" miljoner";
+    moneyElement.textContent = money.toString() +" kr";
 
     var foundDiamondElement = document.querySelector("#found-diamond");
     if (foundDiamond) {
