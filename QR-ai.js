@@ -495,8 +495,10 @@ function shuffle(array) {
 loadState();
 scanQRCode(new URLSearchParams(window.location.search));
 updateGameState();
-console.log("Gamestate: " + gameState.toString());
+console.log("Gamestate: " + gameState3.toString());
 }
 catch (error){
-    alert(error);
+    let errorMessage = document.createElement("div");
+    errorMessage.textContent=error;
+    document.querySelector("body").appendChild(errorMessage);
 }
