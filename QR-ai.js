@@ -10,7 +10,9 @@ const scanHideShowDelay = 500;
 // Sound initialization
 const correctSound = new Audio("Stinger15.mp3");
 const errorSound = new Audio("wrong.wav");
-const banditSound = new Audio("Stinger16.mp3");
+const banditEncounterSound = new Audio("maleb_laugh.mp3");
+const banditCaughtSound = new Audio("evil_laughter.mp3");
+const banditEscapeSound = new Audio("event_15.mp3");
 const coinsSound = new Audio("Coins_Drop_Carpet_05.wav");
 const diamondSound = new Audio("Stinger_1.mp3");
 const gemSound = new Audio("Glass_2.wav");
@@ -375,35 +377,62 @@ function handleEncounterBing(location) {
 }
 
 function handleBandit(){
-    banditMarkers++;
-    banditSound.play();
+    banditMarkers+=3;
+    banditEncounterSound.play();
     let banditImg = document.createElement("img");
     banditImg.classList.add("treasure-image");
     banditImg.src=banditImage;
-    if (banditMarkers == 3) {
-        money = 0;
-        banditContainer.innerHTML = "";
-        banditMarkers = 0;
-        showModal({
-            message: "Banditer! De stjäl alla dina pengar! :(",
-            element: banditImg,
-            callback: () => {
+    showModal({
+        message: "Banditer!!",
+        element: banditImg,
+        buttonText: "Fly!!",
+        callback: () => {
+            let escapeMessage = ""
+            if (banditMarkers==3){
+                escapeMessage = "Banditerna tar alla dina pengar!";
                 money = 0;
-                saveState();
-                updateScore();
+                banditCaughtSound.play();
             }
-        });
-    }
-    else{
-        showModal({
-            message: "Banditer! Du flyr i sista sekunden!",
-            element: banditImg,
-            callback: () => {
-                saveState();
-                updateScore();
+            else {
+                escapeMessage = "Du lyckas fly!";
+                banditEscapeSound.play();
             }
-        });
-    }
+            showModal({
+                message: escapeMessage,
+                callback: () =>{
+                   saveState();
+                   updateScore(); 
+                }
+                
+            })
+
+        }
+    });
+
+    // if (banditMarkers == 3) {
+    //     money = 0;
+    //     banditContainer.innerHTML = "";
+    //     banditMarkers = 0;
+    //     showModal({
+    //         message: "Banditer! De stjäl alla dina pengar! :(",
+    //         element: banditImg,
+    //         callback: () => {
+    //             money = 0;
+    //             saveState();
+    //             updateScore();
+    //         }
+    //     });
+    // }
+    // else{
+    //     showModal({
+    //         message: "Banditer! Du flyr i sista sekunden!",
+    //         element: banditImg,
+    //         callback: () => {
+    //             saveState();
+    //             updateScore();
+    //         }
+    //     });
+    // }
 }
 
 function handleTreasureFound(treasure){
