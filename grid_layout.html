@@ -25,42 +25,44 @@
         }
 
         .header {
-            margin-bottom: 20px;
+            margin-bottom: 1vh;
         }
+
 
         .diamond {
             position: absolute;
-            top: 5vh;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6vh;
-            height: 6vh;
-            background-image: url(diamond.png);
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-color: transparent;
+    top: 7vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10vh;
+    height: 10vh;
+    background-image: url(diamond.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: transparent;
         }
 
         .gem-container {
-            width: 19vh;
-            height: 23vh;
-            margin-bottom: 10px;
-            margin: auto;
-            margin-top: 14vh;
+            /*border: 4px solid red;*/
+    width: 32vh;
+    height: 40vh;
+    margin-bottom: 10px;
+    margin: auto;
+    margin-top: 23vh;
 
         }
 
         .gem-border {
             position: relative;
-            width: 37vh;
-            height: 46vh;
-            background-image: url(gem-frame.png);
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-color: transparent;
-            background-size: cover;
-            /* margin: auto; */
-            background-position: center;
+    width: 38vh;
+    height: 66vh;
+    background-image: url(gem-frame2.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    background-size: cover;
+    /* margin: auto; */
+    background-position: center;
         }
 
         .gem-grid {
@@ -72,32 +74,38 @@
         }
 
         .gem {
-            width: 4vh;
-            /* Adjust the size as needed */
-            height: 5vh;
-
-            /* Placeholder for gem images */
-            background-image: url("emerald.png");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-color: transparent;
+            width: 7vh;
+    height: 8vh;
+    background-image: url(emerald.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: transparent;
         }
 
         .bandit-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-top: 1vh;
         }
 
         .bandit {
             width: 50px;
             height: 50px;
             background-color: #8b0000;
-            /* Placeholder for bandit images */
+            background-image: url("bandit.jfif");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: transparent;
             margin: 0 5px;
         }
 
-
+        .money-text {
+            margin: 0;
+    height: 6vh;
+    text-align: center;
+    font-size: xx-large;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
         .button-container {
             display: flex;
@@ -131,8 +139,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Försunna Diamanten v0.3</h1>
-            <p>200 000kr</p>
+            <h1>Försvunna Diamanten</h1>
+            
         </div>
 
         <div class="gem-border">
@@ -172,6 +180,7 @@
             <div class="bandit"></div>
             <!-- Add more bandit divs as per the encounters -->
         </div>
+        <p class="money-text">200 000kr</p>
         <div class="button-container">
             <!-- Buttons at the bottom -->
             <div class="button"></div>
