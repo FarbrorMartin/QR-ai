@@ -143,7 +143,7 @@ function startNewGame(locationList) {
     gameState = GAME_IN_PROGRESS;
     startTime = new Date().getTime();
 
-    if (window.location.hostname == "localhost"){
+    if (window.location.hostname == "localhost") {
         trace("Testmode");
         shuffledLocations = [];
         for (var i in encounters) {
@@ -153,12 +153,12 @@ function startNewGame(locationList) {
 
     var qrCodeContainer = document.createElement("div");
     renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
-    
+
     showModal({
-        message: "Tryck på OK för att starta.",
+        message: "Nytt spel!",
         callback: () => whistleSound.play(),
         element: qrCodeContainer,
-        secondMessage: "Andra spelare kan skanna QR-koden här för att spela samma bana."
+        secondMessage: "Tryck ok för att starta eller låt andra skanna koden här för att joina ditt spel."
     });
 
 
@@ -185,7 +185,9 @@ function showModal(options) {
     }
 
     if (options.element) {
-        modalContent.appendChild(options.element);
+        let el = options.element;
+        el.classList.add("modal-content-center-element");
+        modalContent.appendChild(el);
     }
 
     var okButton = document.createElement("button");
@@ -206,7 +208,7 @@ function showModal(options) {
 
 function updateScore() {
     var moneyElement = document.querySelector("#money");
-    moneyElement.textContent = money.toString() +" kr";
+    moneyElement.textContent = money.toString() + " kr";
 
     var foundDiamondElement = document.querySelector("#found-diamond");
     if (foundDiamond) {
@@ -345,9 +347,11 @@ function toggleScanner() {
 function setScannerState(active) {
     if (active) {
         videoContainer.classList.remove("hidden");
+        scanButton.classList.add("active");
         scanner.start();
     } else {
         videoContainer.classList.add("hidden");
+        scanButton.classList.remove("active");
         scanner.stop();
     }
 }
@@ -359,10 +363,10 @@ function handleEncounterBing(location) {
     //isItemCollected = false;  
     trace(encounter);
     if (encounter == "bandit") {
-       trace("bandit");
-       handleBandit();
+        trace("bandit");
+        handleBandit();
     }
-    else if (encounters.includes(encounter)){
+    else if (encounters.includes(encounter)) {
         trace("treasure");
         handleTreasureFound(encounter);
     }
@@ -376,19 +380,19 @@ function handleEncounterBing(location) {
     }
 }
 
-function handleBandit(){
-    banditMarkers+=3;
+function handleBandit() {
+    banditMarkers += 1;
     banditEncounterSound.play();
     let banditImg = document.createElement("img");
     banditImg.classList.add("treasure-image");
-    banditImg.src=banditImage;
+    banditImg.src = banditImage;
     showModal({
         message: "Banditer!!",
         element: banditImg,
         buttonText: "Fly!!",
         callback: () => {
             let escapeMessage = ""
-            if (banditMarkers==3){
+            if (banditMarkers == 3) {
                 escapeMessage = "Banditerna tar alla dina pengar!";
                 money = 0;
                 banditCaughtSound.play();
@@ -399,11 +403,11 @@ function handleBandit(){
             }
             showModal({
                 message: escapeMessage,
-                callback: () =>{
-                   saveState();
-                   updateScore(); 
+                callback: () => {
+                    saveState();
+                    updateScore();
                 }
-                
+
             })
 
         }
@@ -435,24 +439,24 @@ function handleBandit(){
     // }
 }
 
-function handleTreasureFound(treasure){
+function handleTreasureFound(treasure) {
     let treasureData = treasures[treasure];
     let treasureValue = getValueForTreasure(treasure);
     let treasureImg = document.createElement("img");
     treasureImg.classList.add("treasure-image");
-    treasureImg.src=treasureData.image;
+    treasureImg.src = treasureData.image;
     treasureData.sound.play();
     trace("handle treasure");
     showModal({
-        message: "Du hittade "+ treasureData.name +"!",
+        message: "Du hittade " + treasureData.name + "!",
         callback: () => {
-            
+
             money += treasureValue;
             saveState();
             updateScore();
         },
         element: treasureImg,
-        secondMessage: treasureValue.toString()+ "kr!"
+        secondMessage: treasureValue.toString() + "kr!"
 
     });
 }
@@ -471,30 +475,30 @@ function collectItem() {
 
     colorBlock.style.backgroundImage = '';  // Clear image
     foundItem = "";  // Clear found item
-    isItemCollected = true;  
+    isItemCollected = true;
 
     saveState();
     updateScore();
 }
 
-function getValueForTreasure(treasure){
-    if(treasures.hasOwnProperty(treasure)){
-        return treasures[treasure].value *1000;
+function getValueForTreasure(treasure) {
+    if (treasures.hasOwnProperty(treasure)) {
+        return treasures[treasure].value * 1000;
         // let originalValue = treasures[treasure].value;
         // let randRange = 0.2;
         // let randomFactor = (Math.random() * 2*randRange)-randRange;
-        
+
         // let randomizedValue = originalValue + originalValue*randomFactor;
         // return Math.round(randomizedValue);
     }
-    else{
+    else {
         return 0;
     }
 }
 
 function handleStartScanned() {
     if (gameState === GAME_NOT_STARTED || gameState === GAME_FINISHED) {
-         startNewGame();
+        startNewGame();
     } else if (gameState === GAME_IN_PROGRESS) {
         finishTime = new Date().getTime() - startTime;
         var timeInSeconds = finishTime / 1000;
@@ -521,10 +525,10 @@ function handleSeedScanned(seed) {
                 startNewGame(parsedArray);
             }
         });
-        
+
     } catch (error) {
         showModal({
-            message:"Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod."
+            message: "Något blev fel vid inläsningen av QR-koden. Prova att skanna igen, eller börja om med en ny kod."
         });
     }
 }
@@ -533,10 +537,11 @@ function shuffle(array) {
     array.sort(() => Math.random() - 0.5);
 }
 
-function trace(message){
-    let el = document.createElement("div");
-    el.textContent=message;
-    document.querySelector("body").appendChild(el);
+function trace(message) {
+    return;
+    //     let el = document.createElement("div");
+    //     el.textContent=message;
+    //     document.querySelector("body").appendChild(el);
 }
 
 

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Interface</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            /* Background color as per the mockup */
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .diamond {
+            position: absolute;
+            top: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6vh;
+            height: 6vh;
+            background-image: url(diamond.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-color: transparent;
+        }
+
+        .gem-container {
+            width: 19vh;
+            height: 23vh;
+            margin-bottom: 10px;
+            margin: auto;
+            margin-top: 14vh;
+
+        }
+
+        .gem-border {
+            position: relative;
+            width: 37vh;
+            height: 46vh;
+            background-image: url(gem-frame.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-color: transparent;
+            background-size: cover;
+            /* margin: auto; */
+            background-position: center;
+        }
+
+        .gem-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0vh;
+            justify-items: center;
+
+        }
+
+        .gem {
+            width: 4vh;
+            /* Adjust the size as needed */
+            height: 5vh;
+
+            /* Placeholder for gem images */
+            background-image: url("emerald.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-color: transparent;
+        }
+
+        .bandit-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .bandit {
+            width: 50px;
+            height: 50px;
+            background-color: #8b0000;
+            /* Placeholder for bandit images */
+            margin: 0 5px;
+        }
+
+
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+
+        }
+
+        .button {
+            width: 60px;
+            /* Adjust the size as needed */
+            height: 60px;
+            background-color: #333;
+            /* Placeholder for button images */
+        }
+
+        .scan-button {
+            width: 100px;
+            /* Adjust the size as needed */
+            height: 100px;
+            background-color: #c2c2c2;
+            background-image: url('qr-code-scan-icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            /* Placeholder for button images */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Försunna Diamanten v0.3</h1>
+            <p>200 000kr</p>
+        </div>
+
+        <div class="gem-border">
+            <div class="diamond"></div>
+            <div class="gem-container">
+                <div class="gem-grid">
+                    <!-- Populate with gems dynamically -->
+                    <!-- Example gem -->
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                    <div class="gem"></div>
+                </div>
+                <!-- Add more gem divs as per the collected gems -->
+            </div>
+        </div>
+        <div class="bandit-container">
+            <!-- Populate with bandit images as encounters happen -->
+            <div class="bandit"></div>
+            <div class="bandit"></div>
+            <div class="bandit"></div>
+            <!-- Add more bandit divs as per the encounters -->
+        </div>
+        <div class="button-container">
+            <!-- Buttons at the bottom -->
+            <div class="button"></div>
+            <div class="scan-button"></div>
+            <div class="button"></div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "QR-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "QR-ai.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FarbrorMartin/QR-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FarbrorMartin/QR-ai/issues"
+  },
+  "homepage": "https://github.com/FarbrorMartin/QR-ai#readme",
+  "devDependencies": {
+    "eslint": "^8.53.0"
+  }
+}
