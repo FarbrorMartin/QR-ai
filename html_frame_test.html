@@ -25,20 +25,20 @@
   }
 
   .frame {
-    background-color: #301708; /* Dark brown background */
+    background-color: #301708;
     border-radius: 15px;
-    border: 10px solid #8B4513; /* Dark brown border */
+    border: 10px solid #8B4513;
     padding: 1vh;
-    box-shadow: 0 0 10px #000; /* Shadow for 3D effect */
-    width: 80vw; /* Responsive width based on viewport width */
-    max-width: 500px; /* Maximum width of the frame */
+    box-shadow: 0 0 10px #000;
+    width: 80vw; /* Increase the width to use more space */
+    margin: 2vh 0; /* Adjust spacing */
   }
 
   .top-gem {
+    width: 30vw; /* Decrease the width of the top gem */
+   
+    margin: 0 auto;
     display: block;
-    width: 40vw; /* Smaller top gem */
-    max-width: 180px; /* Maximum width of the top gem */
-    margin: 0 auto; /* Centering the top gem */
   }
   .grid {
     display: grid;
@@ -64,47 +64,31 @@
 
   .bandit {
     border-radius: 55%;
-    width: 20vw; /* Responsive bandit size based on viewport width */
+    width: 15vw; /* Responsive bandit size based on viewport width */
     max-width: 100px; /* Maximum width of bandit images */
   }
 
   .score {
     text-align: center;
     color: #ffd700; /* Gold color for the score */
-    font-size: 10vw; /* Responsive font size based on viewport width */
+    font-size: 8vw; /* Responsive font size based on viewport width */
     margin: 2vh 0; /* Vertical space around score */
   }
 
   .scan-button {
-    background: url('qr-code-scan-icon.png') no-repeat center center; /* QR code scan icon */
+    background: url('qr-code-scan-icon.png') no-repeat center center;
     background-size: contain;
-    width: 30vw; /* Responsive square size based on viewport width */
-    height: 30vw; /* Square aspect ratio */
-    max-width: 200px; /* Maximum size */
-    max-height: 200px; /* Square aspect ratio */
+    width: 25vw; /* Decrease the width of the scan button */
+    height: 25vw; /* Adjust the height to maintain the aspect ratio */
+    max-width: 150px; /* Decrease the maximum size */
+    max-height: 150px;
     border: none;
-    border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 0 10px #000; /* Shadow for 3D effect */
+    border-radius: 15px;
+    box-shadow: 0 0 10px #000;
     cursor: pointer;
-    margin-bottom: 5vh; /* Space from the bottom */
-    margin-top: 2vh;
   }
 
-  @media (max-width: 600px) {
-    .header, .score {
-      font-size: 6vw; /* Larger font size for smaller screens */
-    }
-    .top-gem {
-      width: 50vw; /* Larger top gem for smaller screens */
-    }
-    .bandit {
-      width: 25vw; /* Larger bandit images for smaller screens */
-    }
-    .scan-button {
-      width: 50vw; /* Larger scan button for smaller screens */
-      height: 50vw; /* Maintaining square aspect ratio */
-    }
-  }
+
 </style>
 </head>
 <body>
