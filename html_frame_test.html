@@ -42,23 +42,22 @@
       padding: 1vh;
       box-shadow: 0 0 10px #000;
       width: 80vw;
-      /* Adjusted to 85% of viewport width */
-      height: 65vh;
-      /* Adjusted to 75% of viewport height */
+      height: 50vh;
       margin: 10px 0;
-      /* Adjust top and bottom margin */
       overflow: hidden;
-      display:flex;
-      flex-direction: column;
-      justify-content: space-between;
-      max-width: 400px;
-    }
-
-    .game-container{
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* Distribute space among children */
-      height: 100%; /* Fill the height of the frame */
+      justify-content: space-between;
+      max-width: 320px;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      /* Distribute space among children */
+      height: 100%;
+      /* Fill the height of the frame */
     }
 
     .top-gem {
@@ -68,17 +67,16 @@
       margin: 0 auto;
       display: block;
       height: 20%;
-      width:auto;
+      width: auto;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      /* 5 columns for gems */
       grid-gap: 1vw;
-      padding: 1vh;
-      overflow: hidden;
+      padding: 2vh;
       flex-grow: 1;
+      max-height: 50%;
     }
 
     .gem-slot {
@@ -96,25 +94,25 @@
       display: flex;
       justify-content: space-around;
       margin-top: 2vh;
-      height: 20%;
+      max-height: 15%;
+      width: 60%;
+      margin: auto;
     }
+
 
     .bandit {
       border-radius: 55%;
-      width: 15vw;
       /* Responsive bandit size based on viewport width */
-      max-width: 100px;
+      max-width: 30%;
       /* Maximum width of bandit images */
     }
 
     .score {
       text-align: center;
       color: #ffd700;
-      /* Gold color for the score */
       font-size: 8vw;
-      /* Responsive font size based on viewport width */
       margin: 1vh 0;
-      /* Vertical space around score */
+      max-height: 15%;
     }
 
     .scan-button {
@@ -130,7 +128,7 @@
       border: none;
     }
 
-    .scan-button.active{
+    .scan-button.active {
       background: url('qr-code-scan-icon-active.png') no-repeat center center;
       background-size: contain;
     }
@@ -153,7 +151,7 @@
       object-fit: cover;
       /* This will cover the entire parent area */
     }
-    
+
     .hidden {
       display: none;
     }
