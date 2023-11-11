@@ -14,11 +14,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: space-between;
+      /* Evenly space out header, frame, and button */
       min-height: 100vh;
       font-family: 'Arial', sans-serif;
       background-image: url('jungle_background2.png');
       background-size: cover;
       background-repeat: no-repeat;
+      padding: 10px;
+      /* Space around the edges */
     }
 
     .header {
@@ -27,10 +31,8 @@
       /* White text color */
       font-size: 10vw;
       /* Responsive font size based on viewport width */
-      margin-top: 1vh;
-      /* Space from the top */
-      margin-bottom: 0vh;
-      /* Space from the header to top gem */
+      margin: 10px 0;
+      /* Adjust top and bottom margin */
     }
 
     .frame {
@@ -39,10 +41,12 @@
       border: 10px solid #8B4513;
       padding: 1vh;
       box-shadow: 0 0 10px #000;
-      width: 75vw;
-      /* Increase the width to use more space */
-      margin: 2vh 0;
-      /* Adjust spacing */
+      width: 85vw;
+      /* Adjusted to 85% of viewport width */
+      height: 75vh;
+      /* Adjusted to 75% of viewport height */
+      margin: 10px 0;
+      /* Adjust top and bottom margin */
       overflow: hidden;
     }
 
@@ -111,24 +115,28 @@
       border: none;
     }
 
+
+    .video-container-flex {
+      width: 100%;
+      /* Fill the parent container */
+      height: 100%;
+      /* Fill the parent container */
+      background: black;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .video-feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* This will cover the entire parent area */
+    }
+    
     .hidden {
       display: none;
     }
-
-    .video-container-flex {
-  width: 100%; /* Fill the parent container */
-  height: 100%; /* Fill the parent container */
-  background: black;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.video-feed {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* This will cover the entire parent area */
-}
   </style>
 </head>
 
@@ -137,7 +145,7 @@
   <div class="header">Diamantjakten</div>
 
   <div class="frame">
-    <div id="video-container" class=".video-container-flex hidden">
+    <div id="video-container" class="video-container-flex hidden">
       <video id="qr-video" class="video-feed"></video>
     </div>
     <div id="game-container">
@@ -545,7 +553,7 @@
       videoContainer.classList.remove("hidden");
       gameContainer.classList.add("hidden");
       scanButton.classList.add("active");
-      
+
     } else {
       videoContainer.classList.add("hidden");
       gameContainer.classList.remove("hidden");
