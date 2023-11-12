@@ -53,6 +53,15 @@
 
     }
 
+    .main-container {
+      width: 80%;
+      height: 80%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     /* Modal Content/Box */
     .modal-content {
       background-color: #fefefe;
@@ -223,7 +232,8 @@
       /* Decrease the maximum size */
       max-height: 150px;
       border: none;
-      margin-bottom:2vh;
+
+      margin-bottom: auto;
     }
 
     .scan-button.active {
@@ -257,7 +267,7 @@
 </head>
 
 <body>
-
+  <div class="main-container">
   <div class="header">Diamantjakten</div>
 
   <div class="frame">
@@ -301,7 +311,7 @@
   </div>
 
   <button class="scan-button"></button>
-
+</div>
 </body>
 
 </html>
