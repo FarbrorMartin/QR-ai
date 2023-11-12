@@ -16,7 +16,7 @@
       align-items: center;
       justify-content: space-between;
       /* Evenly space out header, frame, and button */
-      min-height: 95%;
+      height: 100%;
       width: 100%;
       font-family: 'Arial', sans-serif;
       background-image: url('jungle_background2.png');
@@ -879,7 +879,7 @@
 
   function adjustHeight() {
   const viewHeight = window.innerHeight;
-  document.querySelector('body').style.height = `${viewHeight}px`;
+  document.querySelector('main-container').style.height = `${viewHeight}px`;
 }
 
 window.addEventListener('resize', adjustHeight);
