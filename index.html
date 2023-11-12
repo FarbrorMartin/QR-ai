@@ -16,7 +16,8 @@
       align-items: center;
       justify-content: space-between;
       /* Evenly space out header, frame, and button */
-      min-height: 100vh;
+      min-height: 95%;
+      width: 100%;
       font-family: 'Arial', sans-serif;
       background-image: url('jungle_background2.png');
       background-size: cover;
@@ -875,6 +876,15 @@
     //     el.textContent=message;
     //     document.querySelector("body").appendChild(el);
   }
+
+  function adjustHeight() {
+  const viewHeight = window.innerHeight;
+  document.querySelector('body').style.height = `${viewHeight}px`;
+}
+
+window.addEventListener('resize', adjustHeight);
+window.addEventListener('load', adjustHeight);
+
 
 
   document.querySelector("button").addEventListener("click", () => clickSound.play());
