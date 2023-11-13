@@ -27,10 +27,16 @@
     }
 
     .header {
+      /* background-image: url('banner.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center; */
       text-align: center;
-      color: #fff;
+      color: #ffdd00;
+      /* min-width: 90vw;
+      min-height: 10vh; */
       /* White text color */
-      font-size: 10vw;
+      font-size: 9vw;
       /* Responsive font size based on viewport width */
       margin: 10px 0;
       /* Adjust top and bottom margin */
@@ -167,7 +173,7 @@
       /* Fill the height of the frame */
     }
 
-    .top-gem {
+    .diamond-container {
       width: 25vw;
       /* Decrease the width of the top gem */
 
@@ -175,6 +181,12 @@
       display: block;
       height: 20%;
       width: auto;
+    }
+
+    .top-gem {
+      width: 25%;
+      margin: auto;
+      display:block;
     }
 
     .grid {
@@ -217,7 +229,7 @@
     .score {
       text-align: center;
       color: #ffd700;
-      font-size: 8vw;
+      font-size: 5vh;
       margin: 1vh 0;
       max-height: 15%;
     }
@@ -276,7 +288,9 @@
       <video id="qr-video" class="video-feed"></video>
     </div>
     <div id="game-container" class="game-container">
-      <img src="diamond.png" alt="Large Top Gem" class="top-gem">
+      <div class="diamond-container">
+        <img src="diamond.png" class="top-gem" >
+      </div>
       <div class="grid">
         <!-- 5x4 grid of random gems -->
         <div class="gem-slot"></div> <!-- Empty slot -->
@@ -879,7 +893,7 @@
 
   function adjustHeight() {
   const viewHeight = window.innerHeight;
-  document.querySelector('main-container').style.height = `${viewHeight}px`;
+  document.querySelector('.main-container').style.height = `${viewHeight}px`;
 }
 
 window.addEventListener('resize', adjustHeight);
@@ -888,7 +902,7 @@ window.addEventListener('load', adjustHeight);
 
 
   document.querySelector("button").addEventListener("click", () => clickSound.play());
-
+  document.querySelector(".frame").addEventListener("click", () => document.querySelector(".top-gem").classList.toggle("hidden"));
   // Initialization
   trace("initializing");
   loadState();
