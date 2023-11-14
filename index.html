@@ -454,7 +454,7 @@
   const videoContainer = document.querySelector("#video-container");
   const scanButton = document.querySelector(".scan-button");
   const colorBlock = document.querySelector("#color-block");
-  const banditContainer = document.querySelector("#bandit-marker-container");
+  const banditContainer = document.querySelector(".bandit-row");
   const qrcodeContainer = document.querySelector("#qrcode-container");
   const gameContainer = document.querySelector("#game-container");
   const treasureGrid = document.querySelector(".grid");
@@ -1114,6 +1114,7 @@
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
   console.log("Gamestate: " + gameState.toString());
+
   // for (let i= 1; i<10; i++){
   //   setTimeout(() => showPopup("Hello "+i.toString()), 1000*i);
   // }
