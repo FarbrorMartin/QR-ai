@@ -19,7 +19,7 @@
       height: 100%;
       width: 100%;
       font-family: 'Arial', sans-serif;
-      background-image: url('jungle_background2.png');
+      background-image: url('jungle_background2.jpg');
       background-size: cover;
       background-repeat: no-repeat;
 
@@ -243,7 +243,7 @@
     }
 
 
-    .bandit {
+    .bandit-marker {
       border-radius: 55%;
       /* Responsive bandit size based on viewport width */
       max-width: 30%;
@@ -341,9 +341,7 @@
           <!-- Repeat for each gem -->
         </div>
         <div class="bandit-row">
-          <img src="bandit.png" alt="Bandit" class="bandit">
-          <img src="bandit.png" alt="Bandit" class="bandit">
-          <img src="bandit.png" alt="Bandit" class="bandit">
+
         </div>
         <div id="score" class="score">Score: 0</div>
       </div>
@@ -358,15 +356,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
 <script src="qrcode.min.js"></script>
 <script type="module">
-  const gemSlots = document.querySelectorAll(".gem-slot");
-  const gemsFound = ["topas.png", "sapphire.png", "topas.png", "ruby.png", "topas.png"];
-  for (let i in gemsFound) {
-    if (i < gemSlots.length) {
-      gemSlots[i].style.backgroundImage = "url('" + gemsFound[i] + "')";
-    }
-  }
-
-
   "use strict";
   import QrScanner from "./qrscan/qr-scanner.min.js";
   // try{
@@ -379,19 +368,19 @@
 
   // Sound initialization
   const correctSound = new Audio("Stinger15.mp3");
-  const errorSound = new Audio("wrong.wav");
+  const errorSound = new Audio("wrong.mp3");
   const banditEncounterSound = new Audio("maleb_laugh.mp3");
   const banditCaughtSound = new Audio("evil_laughter.mp3");
   const banditEscapeSound = new Audio("event_15.mp3");
-  const coinsSound = new Audio("Coins_Drop_Carpet_05.wav");
+  const coinsSound = new Audio("Coins_Drop_Carpet_05.mp3");
   const diamondSound = new Audio("Stinger_1.mp3");
-  const gemSound = new Audio("Glass_2.wav");
-  const whistleSound = new Audio("whistle2.wav");
+  const gemSound = new Audio("Glass_2.mp3");
+  const whistleSound = new Audio("whistle2.mp3");
   const finishGameSound = new Audio("Stinger_13.mp3");
-  const clickSound = new Audio("clicky button low.wav");
+  const clickSound = new Audio("clicky_button_low.mp3");
 
   // Images
-  const banditImage = "bandit.jfif";
+  const banditImage = "bandit_100x100.png";
 
   // treasures
   const encounters = ["bandit", "bandit", "bandit", "diamond", "ruby", "ruby", "sapphire", "sapphire", "emerald", "emerald", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins", "coins"];
@@ -434,7 +423,7 @@
     }
   };
 
-
+  let foundTreasures = [];
 
   // Global Variables
   let gameState = GAME_NOT_STARTED;
@@ -468,6 +457,9 @@
   const banditContainer = document.querySelector("#bandit-marker-container");
   const qrcodeContainer = document.querySelector("#qrcode-container");
   const gameContainer = document.querySelector("#game-container");
+  const treasureGrid = document.querySelector(".grid");
+  const gemSlots = document.querySelectorAll(".gem-slot");
+
 
 
   // QR Scanner
@@ -694,6 +686,7 @@
     gameState = GAME_NOT_STARTED;
     money = 0;
     foundDiamond = false;
+    foundTreasures = [];
     shuffledLocations = [];
     visitedLocations = [];
     for (var i in encounters) {
@@ -712,6 +705,7 @@
   }
 
   function updateGameState() {
+    updateTreasureGrid();
     updateScore();
   }
 
@@ -791,8 +785,9 @@
     banditMarkers += 1;
     banditEncounterSound.play();
     let banditImg = document.createElement("img");
-    banditImg.classList.add("treasure-image");
+    banditImg.classList.add("bandit-marker");
     banditImg.src = banditImage;
+    banditContainer.appendChild(banditImg);
     showModal({
       message: "Banditer!!",
       element: banditImg,
@@ -862,13 +857,32 @@
       callback: () => {
 
         money += treasureValue;
+        foundTreasures.push(treasure);
         saveState();
         updateScore();
+        updateTreasureGrid();
       },
       element: treasureImg,
       secondMessage: treasureValue.toString() + "kr!"
 
     });
+  }
+
+  function updateTreasureGrid(){
+    for (let i = 0; i < gemSlots.length; i++){
+      if (foundTreasures.length > i){
+        let treasureKey = foundTreasures[i];
+        gemSlots[i].style.backgroundImage = "url('" + treasures[treasureKey].image + "')";
+      }
+      else{
+        gemSlots[i].style.backgroundImage = "none";
+      }
+    }
+    // for (let i in foundTreasures) {
+    //   if (i < gemSlots.length) {
+    //     gemSlots[i].style.backgroundImage = "url('" + gemsFound[i] + "')";
+    //   }
+    // }
   }
 
   function collectItem() {
@@ -1100,9 +1114,9 @@
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
   console.log("Gamestate: " + gameState.toString());
-  for (let i= 1; i<10; i++){
-    setTimeout(() => showPopup("Hello "+i.toString()), 1000*i);
-  }
+  // for (let i= 1; i<10; i++){
+  //   setTimeout(() => showPopup("Hello "+i.toString()), 1000*i);
+  // }
   //}
   // catch (error){
   //     let el = document.createElement("div");
