@@ -41,7 +41,7 @@
       justify-content: center;
       font-size: 10vw;
       margin-top: 10px;
-      outline: 4px solid #301010;
+      outline: 4px solid #1e1111;
       border-radius: 8px;
     }
 
@@ -189,7 +189,7 @@
     .top-gem {
       width: 25%;
       margin: auto;
-      display:block;
+      display: block;
     }
 
     .grid {
@@ -284,55 +284,58 @@
 
 <body>
   <div class="main-container">
-  <div class="header">Diamantjakten</div>
+    <div class="header">Diamantjakten</div>
 
-  <div class="frame">
-    <div id="video-container" class="video-container-flex hidden">
-      <video id="qr-video" class="video-feed"></video>
-    </div>
-    <div id="game-container" class="game-container">
-      <div class="diamond-container">
-        <img src="diamond.png" class="top-gem" >
+    <div class="frame">
+      <div id="video-container" class="video-container-flex hidden">
+        <video id="qr-video" class="video-feed"></video>
       </div>
-      <div class="grid">
-        <!-- 5x4 grid of random gems -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
-        <div class="gem-slot"></div> <!-- Empty slot -->
+      <div id="game-container" class="game-container">
+        <div class="diamond-container">
+          <img src="diamond.png" class="top-gem">
+        </div>
+        <div class="grid">
+          <!-- 5x4 grid of random gems -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
+          <div class="gem-slot"></div> <!-- Empty slot -->
 
-        <!-- Repeat for each gem -->
+          <!-- Repeat for each gem -->
+        </div>
+        <div class="bandit-row">
+          <img src="bandit.png" alt="Bandit" class="bandit">
+          <img src="bandit.png" alt="Bandit" class="bandit">
+          <img src="bandit.png" alt="Bandit" class="bandit">
+        </div>
+        <div id="score" class="score">Score: 0</div>
       </div>
-      <div class="bandit-row">
-        <img src="bandit.png" alt="Bandit" class="bandit">
-        <img src="bandit.png" alt="Bandit" class="bandit">
-        <img src="bandit.png" alt="Bandit" class="bandit">
-      </div>
-      <div id="score" class="score">Score: 0</div>
     </div>
+
+    <button class="scan-button"></button>
   </div>
-
-  <button class="scan-button"></button>
-</div>
 </body>
 
 </html>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-database.js"></script>
+<script src="qrcode.min.js"></script>
 <script type="module">
   const gemSlots = document.querySelectorAll(".gem-slot");
   const gemsFound = ["topas.png", "sapphire.png", "topas.png", "ruby.png", "topas.png"];
@@ -422,6 +425,10 @@
   let startTime = new Date().getTime();
   let isProcessingScanResult = false;
 
+  let currentGameId = null;
+  let playerId = 'player_' + Math.random().toString(36).substr(2, 9);
+
+
   let state = {
     gameState: GAME_NOT_STARTED,
     money: 0,
@@ -467,9 +474,10 @@
     scanner.stop();
     setTimeout(() => {
       setScannerState(false);
+      let scannedGameId = urlParams.get("gameid");
       const gameSeed = urlParams.get("gameseed");
       const location = urlParams.get("location");
-      if (gameSeed !== null) handleSeedScanned(gameSeed);
+      if (gameSeed !== null) handleSeedScanned(scannedGameId, gameSeed);
       else if (location === null || location === "start") handleStartScanned();
       else if (visitedLocations.includes(location)) errorSound.play();
       else showModal({
@@ -496,9 +504,10 @@
         shuffledLocations.push(i);
       }
     }
+    registerNewGame();
 
     var qrCodeContainer = document.createElement("div");
-    //renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
+    renderQRCodeGameSeed(qrCodeContainer, JSON.stringify(shuffledLocations), "#000000");
 
     showModal({
       message: "Nytt spel!",
@@ -677,7 +686,7 @@
     element.appendChild(innerDiv);
     innerDiv.classList.add("qr-code");
     var qrcode = new QRCode(innerDiv, {
-      text: url + "?gameseed=" + text,
+      text: url +"?gameid="+ currentGameId + "&gameseed=" + text,
       width: Math.min(window.innerWidth * 0.6, 300),
       height: Math.min(window.innerWidth * 0.6, 300),
       colorDark: color,
@@ -797,6 +806,9 @@
     treasureImg.src = treasureData.image;
     treasureData.sound.play();
     trace("handle treasure");
+    if (treasure == "diamond"){
+      sendFindTreasureEvent();
+    }
     showModal({
       message: "Du hittade " + treasureData.name + "!",
       callback: () => {
@@ -866,9 +878,10 @@
     }
   }
 
-  function handleSeedScanned(seed) {
+  function handleSeedScanned(gameId, seed) {
     try {
       const parsedArray = JSON.parse(seed);
+      currentGameId = gameId;
       showModal({
         message: "Bana inläst. Tryck på OK för att börja!",
         callback: () => {
@@ -895,13 +908,108 @@
   }
 
   function adjustHeight() {
-  const viewHeight = window.innerHeight;
-  document.querySelector('.main-container').style.height = `${viewHeight}px`;
-}
+    const viewHeight = window.innerHeight;
+    document.querySelector('.main-container').style.height = `${viewHeight}px`;
+  }
 
-window.addEventListener('resize', adjustHeight);
-window.addEventListener('load', adjustHeight);
+  window.addEventListener('resize', adjustHeight);
+  window.addEventListener('load', adjustHeight);
 
+
+
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCKFBJPXhk_mFUBcCKWW4iz-ujwps_fIhM",
+    authDomain: "martins-push-poc.firebaseapp.com",
+    databaseURL: "https://martins-push-poc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "martins-push-poc",
+    storageBucket: "martins-push-poc.appspot.com",
+    messagingSenderId: "701298343921",
+    appId: "1:701298343921:web:cfed3991609cea60740e50"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  
+
+  function joinGame() {
+    
+    if (!currentGameId) {
+      return;
+    }
+
+    let playersRef = database.ref('games/' + currentGameId + '/players');
+    playersRef.child(playerId).set(true);
+
+    //displayNotification(playerId + ' joined game ' + currentGameId);
+
+    listenForEvents();
+  }
+
+  function sendFindTreasureEvent() {
+    if (!currentGameId) {
+      console.log('findTreasure() without joining game first.');
+      return;
+    }
+
+    var eventsRef = database.ref('games/' + currentGameId + '/events');
+    eventsRef.push({
+      action: 'treasureFound',
+      byPlayer: playerId,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  }
+
+  function registerNewGame() {
+    currentGameId = 'game_' + Math.random().toString(36).substr(2, 9);
+    var gamesRef = database.ref('games/' + currentGameId);
+    gamesRef.set({ started: true });
+    displayNotification('A new game has started with ID ' + currentGameId);
+    //document.getElementById('gameIdInput').value = currentGameId;
+    joinGame();
+  }
+
+  function listenForEvents() {
+    var eventsRef = database.ref('games/' + currentGameId + '/events');
+    eventsRef.on('child_added', (snapshot) => {
+      
+      const event = snapshot.val();
+      if (event.playerId != playerId){
+        if (event.action === 'treasureFound') {
+          displayNotification( event.byPlayer + " hittade diamanten!");
+        }
+    }});
+
+    var playersRef = database.ref('games/' + currentGameId + '/players');
+    playersRef.on('child_added', (snapshot) => {
+      console.log("event playerId:"+snapshot.key +" playerId:"+playerId);
+      if (snapshot.key !== playerId) {
+        console.log("Displaying notification");
+        displayNotification('Player ' + snapshot.key + ' joined the game');
+      }
+      //updatePlayerList();
+    }
+    );
+  }
+
+  function displayNotification(messageText) {
+    showModal({
+      message: messageText
+    });
+  }
+
+  // function updatePlayerList() {
+  //   var playerListDiv = document.getElementById('playerList');
+  //   var playersRef = database.ref('games/' + currentGameId + '/players');
+  //   playersRef.once('value', (snapshot) => {
+  //     playerListDiv.innerHTML = 'Players in game:<br>';
+  //     snapshot.forEach((childSnapshot) => {
+  //       playerListDiv.innerHTML += childSnapshot.key + '<br>';
+  //     });
+  //   });
+  // }
 
 
   document.querySelector("button").addEventListener("click", () => clickSound.play());
