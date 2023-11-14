@@ -168,10 +168,8 @@
       color: white;
       padding: 10px;
       border-radius: 5px;
-      /* opacity: 0; */
-      /* visibility: hidden; */
+      font-size: 2em;
       z-index: 1000; /* Ensures it floats above other elements */
-      /* transition: opacity 0.5s, visibility 0.5s; */
     }
 
     .frame {
@@ -930,12 +928,12 @@
 
   function handleSeedScanned(gameId, seed) {
     try {
-      const parsedArray = JSON.parse(seed);
+      const parsedSeedData = JSON.parse(seed);
       
       showModal({
         message: "Spelinfo inläst. Tryck OK för att gå med i spelet.",
         callback: () => {
-          joinGame(gameId, parsedArray);
+          joinGame(gameId, parsedSeedData);
           
         }
       });
@@ -1014,7 +1012,22 @@
     });
   }
 
+  function deleteOldGames() {
+    const gamesRef = database.ref('games');
+    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+    gamesRef.once('value').then(snapshot => {
+      snapshot.forEach(gameSnapshot => {
+        if (snapshot.val().timestamp < oneDayAgo) {
+          gameSnapshot.ref.remove();
+        }
+      })
+
+
+    });
+  }
+
   function registerNewGame() {
+    deleteOldGames();
     currentGameId = 'game_' + Math.random().toString(36).substr(2, 9);
     var gamesRef = database.ref('games/' + currentGameId);
     gamesRef.set({ started: true });
@@ -1087,7 +1100,9 @@
   scanQRCode(new URLSearchParams(window.location.search));
   updateGameState();
   console.log("Gamestate: " + gameState.toString());
-
+  for (let i= 1; i<10; i++){
+    setTimeout(() => showPopup("Hello "+i.toString()), 1000*i);
+  }
   //}
   // catch (error){
   //     let el = document.createElement("div");
