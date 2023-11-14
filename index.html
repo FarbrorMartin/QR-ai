@@ -45,6 +45,14 @@
       border-radius: 8px;
     }
 
+    .overlay-text {
+      font-size: 10vw;
+      color: #efff16;
+      position: fixed;
+      top: 20%;
+      text-shadow: 0 0 2vw white;
+    }
+
     .modal {
       position: fixed;
       /* Stay in place */
@@ -285,7 +293,7 @@
 <body>
   <div class="main-container">
     <div class="header">Diamantjakten</div>
-
+    <div id="waiting-for-game-text" class="overlay-text hidden">Väntar på ledaren...</div>
     <div class="frame">
       <div id="video-container" class="video-container-flex hidden">
         <video id="qr-video" class="video-feed"></video>
@@ -351,8 +359,9 @@
   // try{
   // Constants
   const GAME_NOT_STARTED = 0;
-  const GAME_IN_PROGRESS = 1;
-  const GAME_FINISHED = 2;
+  const GAME_INITIALIZED = 1;
+  const GAME_IN_PROGRESS = 2;
+  const GAME_FINISHED = 3;
   const scanHideShowDelay = 500;
 
   // Sound initialization
@@ -494,8 +503,8 @@
 
     resetGame();
     shuffledLocations = locationList ?? shuffledLocations;
-    gameState = GAME_IN_PROGRESS;
-    startTime = new Date().getTime();
+    gameState = GAME_INITIALIZED;
+    document.querySelector("#waiting-for-game-text").classList.toggle("hidden", false);
 
     if (window.location.hostname == "localhost") {
       trace("Testmode");
@@ -511,14 +520,27 @@
 
     showModal({
       message: "Nytt spel!",
-      callback: () => whistleSound.play(),
+      callback: () => sendGameStartedEvent(),
       element: qrCodeContainer,
-      secondMessage: "Tryck ok för att starta eller låt andra skanna koden här för att joina ditt spel."
+      secondMessage: "Tryck ok för att starta spelet eller låt andra skanna koden här för att joina ditt spel."
     });
 
 
 
   }
+
+  function sendGameStartedEvent(){
+    var eventsRef = database.ref('games/' + currentGameId + '/events');
+    eventsRef.push({
+      action: 'gameStarted',
+      gameId: currentGameId,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+    
+    
+  }
+
+
 
   function showModal(options) {
     var modal = document.createElement("div");
@@ -686,7 +708,7 @@
     element.appendChild(innerDiv);
     innerDiv.classList.add("qr-code");
     var qrcode = new QRCode(innerDiv, {
-      text: url +"?gameid="+ currentGameId + "&gameseed=" + text,
+      text: url + "?gameid=" + currentGameId + "&gameseed=" + text,
       width: Math.min(window.innerWidth * 0.6, 300),
       height: Math.min(window.innerWidth * 0.6, 300),
       colorDark: color,
@@ -716,26 +738,37 @@
   }
 
   function handleEncounterBing(location) {
-    visitedLocations.push(location);
-    let shufffledLoc = shuffledLocations[location];
-    let encounter = encounters[shufffledLoc];
-    //isItemCollected = false;  
-    trace(encounter);
-    if (encounter == "bandit") {
-      trace("bandit");
-      handleBandit();
+    if (gameState == GAME_INITIALIZED) {
+      showModal("Vänta på att ledaren startar spelet.");
     }
-    else if (encounters.includes(encounter)) {
-      trace("treasure");
-      handleTreasureFound(encounter);
+    else if (gameState == GAME_NOT_STARTED) {
+      showModal("Börja med att skanna Start-koden.");
+    }
+    else if (gameState == GAME_FINISHED) {
+      showModal("Spelet är slut, skanna Start-koden för att spela igen.");
     }
     else {
-      showModal({
-        message: "Det var ingenting här... :(",
-        callback: function () {
-          errorSound.play();
-        }
-      });
+      visitedLocations.push(location);
+      let shufffledLoc = shuffledLocations[location];
+      let encounter = encounters[shufffledLoc];
+      //isItemCollected = false;  
+      trace(encounter);
+      if (encounter == "bandit") {
+        trace("bandit");
+        handleBandit();
+      }
+      else if (encounters.includes(encounter)) {
+        trace("treasure");
+        handleTreasureFound(encounter);
+      }
+      else {
+        showModal({
+          message: "Det var ingenting här... :(",
+          callback: function () {
+            errorSound.play();
+          }
+        });
+      }
     }
   }
 
@@ -883,7 +916,7 @@
       const parsedArray = JSON.parse(seed);
       currentGameId = gameId;
       showModal({
-        message: "Bana inläst. Tryck på OK för att börja!",
+        message: "Du har joinat! Tryck OK och vänta på att ledaren startar",
         callback: () => {
           startNewGame(parsedArray);
         }
@@ -976,11 +1009,16 @@
     eventsRef.on('child_added', (snapshot) => {
       
       const event = snapshot.val();
-      if (event.playerId != playerId){
-        if (event.action === 'treasureFound') {
+      if (event.action === 'treasureFound' &&event.playerId != playerId){
           displayNotification( event.byPlayer + " hittade diamanten!");
         }
-    }});
+      else if(event.action ="gameStarted" && event.gameId == currentGameId){
+        gameState = GAME_IN_PROGRESS;
+        whistleSound.play();
+        startTime = new Date().getTime();
+        document.querySelector("#waiting-for-game-text").classList.toggle("hidden", true);
+      }
+    });
 
     var playersRef = database.ref('games/' + currentGameId + '/players');
     playersRef.on('child_added', (snapshot) => {
