@@ -1018,7 +1018,7 @@
     currentGameId = 'game_' + Math.random().toString(36).substr(2, 9);
     var gamesRef = database.ref('games/' + currentGameId);
     gamesRef.set({ started: true });
-    displayNotification('A new game has started with ID ' + currentGameId);
+    //displayNotification('A new game has started with ID ' + currentGameId);
     //document.getElementById('gameIdInput').value = currentGameId;
     joinGame(currentGameId, shuffledLocations);
   }
