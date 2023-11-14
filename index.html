@@ -499,12 +499,12 @@
 
 
 
-  function startNewGame(locationList) {
+  function startNewGame() {
 
     resetGame();
-    shuffledLocations = locationList ?? shuffledLocations;
+    
     gameState = GAME_INITIALIZED;
-    document.querySelector("#waiting-for-game-text").classList.toggle("hidden", false);
+
 
     if (window.location.hostname == "localhost") {
       trace("Testmode");
@@ -528,6 +528,8 @@
 
 
   }
+
+
 
   function sendGameStartedEvent(){
     var eventsRef = database.ref('games/' + currentGameId + '/events');
@@ -914,11 +916,12 @@
   function handleSeedScanned(gameId, seed) {
     try {
       const parsedArray = JSON.parse(seed);
-      currentGameId = gameId;
+      
       showModal({
-        message: "Du har joinat! Tryck OK och vänta på att ledaren startar",
+        message: "Spelinfo inläst. Tryck OK för att gå med i spelet.",
         callback: () => {
-          startNewGame(parsedArray);
+          joinGame(gameId, parsedArray);
+          
         }
       });
 
@@ -967,14 +970,15 @@
 
   
 
-  function joinGame() {
-    
-    if (!currentGameId) {
-      return;
-    }
+  function joinGame(id, locations) {
+    resetGame();
+    currentGameId = id;
+    shuffledLocations = locations;
+
 
     let playersRef = database.ref('games/' + currentGameId + '/players');
     playersRef.child(playerId).set(true);
+    document.querySelector("#waiting-for-game-text").classList.toggle("hidden", false);
 
     //displayNotification(playerId + ' joined game ' + currentGameId);
 
@@ -1001,7 +1005,7 @@
     gamesRef.set({ started: true });
     displayNotification('A new game has started with ID ' + currentGameId);
     //document.getElementById('gameIdInput').value = currentGameId;
-    joinGame();
+    joinGame(currentGameId, shuffledLocations);
   }
 
   function listenForEvents() {
