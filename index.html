@@ -134,7 +134,7 @@
 
     .modal-content-center-element {
       height: 50%;
-      padding-top: 3vh;
+      padding-top: 2vh;
     }
 
     .modal-content button {
@@ -152,7 +152,7 @@
 
     .modal-button {
       width: 60%;
-      height: 20%;
+      height: 15%;
       font-size: 12vmin;
       display: flex;
       align-items: center;
@@ -365,6 +365,7 @@
   const GAME_IN_PROGRESS = 2;
   const GAME_FINISHED = 3;
   const scanHideShowDelay = 500;
+  let playerFinished = false;
 
   // Sound initialization
   const correctSound = new Audio("Stinger15.mp3");
@@ -459,6 +460,7 @@
   const gameContainer = document.querySelector("#game-container");
   const treasureGrid = document.querySelector(".grid");
   const gemSlots = document.querySelectorAll(".gem-slot");
+  const overlayText = document.querySelector("#waiting-for-game-text");
 
 
 
@@ -689,6 +691,7 @@
     foundTreasures = [];
     shuffledLocations = [];
     visitedLocations = [];
+    playerFinished = false;
     for (var i in encounters) {
       shuffledLocations.push(i);
     }
@@ -841,6 +844,48 @@
     // }
   }
 
+  function beginGameEndCountdown(){
+    startCountdown(60);
+  }
+
+  function startCountdown(durationInSeconds) {
+    let remainingTime = durationInSeconds;
+    overlayText.classList.toggle("hidden", true);
+
+    // Update the countdown every second
+    const intervalId = setInterval(() => {
+        // Calculate minutes and seconds from remainingTime
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+
+        // Display the result in the element with id="countdown"
+        //overlayText.textContent = "Spelet avslutas om " +  `${minutes}:${seconds.toString().padStart(2, '0')}` + " sekunder.";
+        overlayText.textContent = "Tid kvar " +  `${remainingTime.toString().padStart(2, '0')}` + " sekunder.";
+        // Decrease the remaining time
+        remainingTime--;
+
+        if (gameState == GAME_FINISHED){
+          clearInterval(intervalId);
+          overlayText.textContent = "Väntar på ledaren...";
+          overlayText.classList.toggle("hidden", false);
+        }
+        // When the countdown is over, clear the interval
+        else if (remainingTime < 0) {
+            clearInterval(intervalId);
+            countdownElement.textContent = 'Spelet är slut.';
+            if (gameState == GAME_IN_PROGRESS){
+              var eventsRef = database.ref('games/' + currentGameId + '/events');
+              eventsRef.push({
+                action: 'gameOver',
+                byPlayer: playerId,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+              });
+            }
+        }
+        
+    }, 1000);
+}
+
   function handleTreasureFound(treasure) {
     let treasureData = treasures[treasure];
     let treasureValue = getValueForTreasure(treasure);
@@ -850,6 +895,7 @@
     treasureData.sound.play();
     trace("handle treasure");
     if (treasure == "diamond"){
+
       sendFindTreasureEvent();
     }
     showModal({
@@ -908,12 +954,6 @@
   function getValueForTreasure(treasure) {
     if (treasures.hasOwnProperty(treasure)) {
       return treasures[treasure].value * 1000;
-      // let originalValue = treasures[treasure].value;
-      // let randRange = 0.2;
-      // let randomFactor = (Math.random() * 2*randRange)-randRange;
-
-      // let randomizedValue = originalValue + originalValue*randomFactor;
-      // return Math.round(randomizedValue);
     }
     else {
       return 0;
@@ -928,6 +968,7 @@
       var timeInSeconds = finishTime / 1000;
       var seconds = Math.floor(timeInSeconds % 60);
       var minutes = Math.floor(timeInSeconds / 60);
+      playerFinished = true;
       showModal({
         message: "Du blev klar på " + minutes + " min och " + seconds + " sek!",
         callback: function () {
@@ -1006,9 +1047,6 @@
     let playersRef = database.ref('games/' + currentGameId + '/players');
     playersRef.child(playerId).set(true);
     document.querySelector("#waiting-for-game-text").classList.toggle("hidden", false);
-
-    //displayNotification(playerId + ' joined game ' + currentGameId);
-
     listenForEvents();
   }
 
@@ -1045,8 +1083,7 @@
     currentGameId = 'game_' + Math.random().toString(36).substr(2, 9);
     var gamesRef = database.ref('games/' + currentGameId);
     gamesRef.set({ started: true });
-    //displayNotification('A new game has started with ID ' + currentGameId);
-    //document.getElementById('gameIdInput').value = currentGameId;
+
     joinGame(currentGameId, shuffledLocations);
   }
 
@@ -1056,14 +1093,27 @@
       
       const event = snapshot.val();
       if (event.action === 'treasureFound' &&event.playerId != playerId){
-          displayNotification( event.byPlayer + " hittade diamanten!");
+          showModal( event.byPlayer + " hittade diamanten!");
+          beginGameEndCountdown();
         }
       else if(event.action ="gameStarted" && event.gameId == currentGameId){
         gameState = GAME_IN_PROGRESS;
         whistleSound.play();
         startTime = new Date().getTime();
-        document.querySelector("#waiting-for-game-text").classList.toggle("hidden", true);
+        overlayText.classList.toggle("hidden", true);
       }
+      else if(event.action ="gameOver" && event.gameId == currentGameId && gameState == GAME_IN_PROGRESS){
+        gameState = GAME_FINISHED;
+        finishGameSound.play();
+        overlayText.classList.toggle("hidden", false)
+        if (playerFinished){
+          overlayText.textContent="Du hann tillbaka med " + money.toString() + " kr!";
+        }
+        else{
+          overlayText.textContent="Tyvärr hann du inte tillbaka i tid :(";
+        }
+      }
+
     });
 
     var playersRef = database.ref('games/' + currentGameId + '/players');
@@ -1093,17 +1143,6 @@
     body.appendChild(popup)
     setTimeout(()=> body.removeChild(popup), 3000);
   }
-
-  // function updatePlayerList() {
-  //   var playerListDiv = document.getElementById('playerList');
-  //   var playersRef = database.ref('games/' + currentGameId + '/players');
-  //   playersRef.once('value', (snapshot) => {
-  //     playerListDiv.innerHTML = 'Players in game:<br>';
-  //     snapshot.forEach((childSnapshot) => {
-  //       playerListDiv.innerHTML += childSnapshot.key + '<br>';
-  //     });
-  //   });
-  // }
 
 
   document.querySelector("button").addEventListener("click", () => clickSound.play());
