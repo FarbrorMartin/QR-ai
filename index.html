@@ -359,6 +359,8 @@
   "use strict";
   import QrScanner from "./qrscan/qr-scanner.min.js";
   // try{
+
+  let testMode = false;
   // Constants
   const GAME_NOT_STARTED = 0;
   const GAME_INITIALIZED = 1;
@@ -512,14 +514,14 @@
     
     gameState = GAME_INITIALIZED;
 
-
-    if (window.location.hostname == "localhost") {
+    if (testMode == true){
       trace("Testmode");
       shuffledLocations = [];
       for (var i in encounters) {
         shuffledLocations.push(i);
       }
     }
+
     registerNewGame();
 
     var qrCodeContainer = document.createElement("div");
@@ -1143,8 +1145,10 @@
     body.appendChild(popup)
     setTimeout(()=> body.removeChild(popup), 3000);
   }
-
-
+  if (window.location.hostname == "localhost") {
+     testMode = true;
+  }
+  testMode = true;
   document.querySelector("button").addEventListener("click", () => clickSound.play());
   document.querySelector(".frame").addEventListener("click", () => document.querySelector(".top-gem").classList.toggle("hidden"));
   // Initialization
@@ -1163,5 +1167,6 @@
   //     el.textContent=error;
   //     document.querySelector("body").appendChild(el);
   // }
+
 
 </script>
