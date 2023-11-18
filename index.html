@@ -666,7 +666,8 @@
     else {
       gameState = parsedGameState;
     }
-
+    playerFinished = JSON.parse(localStorage.getItem("playerFinished"));
+    currentGameId = JSON.parse(localStorage.getItem("gameId"));
     shuffledLocations = JSON.parse(localStorage.getItem("shuffledLocations"));
     visitedLocations = JSON.parse(localStorage.getItem("visitedLocations")) ?? [];
     money = parseInt(localStorage.getItem("money")) ?? 0;
@@ -677,6 +678,8 @@
   }
 
   function saveState() {
+    localStorage.setItem("playerFinished", JSON.stringify(playerFinished));
+    localStorage.setItem("gameId", JSON.stringify(currentGameId));
     localStorage.setItem("shuffledLocations", JSON.stringify(shuffledLocations));
     localStorage.setItem("visitedLocations", JSON.stringify(visitedLocations));
     localStorage.setItem("gameState", gameState.toString());
@@ -852,7 +855,7 @@
 
   function startCountdown(durationInSeconds) {
     let remainingTime = durationInSeconds;
-    overlayText.classList.toggle("hidden", true);
+    overlayText.classList.toggle("hidden", false);
 
     // Update the countdown every second
     const intervalId = setInterval(() => {
@@ -869,24 +872,29 @@
         if (gameState == GAME_FINISHED){
           clearInterval(intervalId);
           overlayText.textContent = "Väntar på ledaren...";
-          overlayText.classList.toggle("hidden", false);
+          overlayText.classList.toggle("hidden", true);
         }
         // When the countdown is over, clear the interval
         else if (remainingTime < 0) {
             clearInterval(intervalId);
             countdownElement.textContent = 'Spelet är slut.';
             if (gameState == GAME_IN_PROGRESS){
-              var eventsRef = database.ref('games/' + currentGameId + '/events');
-              eventsRef.push({
-                action: 'gameOver',
-                byPlayer: playerId,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-              });
+             sendGameOverEvent();
             }
         }
         
     }, 1000);
 }
+
+  function sendGameOverEvent(){
+    console.log("Sending game over for "+ currentGameId);
+    var eventsRef = database.ref('games/' + currentGameId + '/events');
+    eventsRef.push({
+      action: 'gameOver',
+      byPlayer: playerId,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  }
 
   function handleTreasureFound(treasure) {
     let treasureData = treasures[treasure];
@@ -963,24 +971,43 @@
   }
 
   function handleStartScanned() {
-    if (gameState === GAME_NOT_STARTED || gameState === GAME_FINISHED) {
-      startNewGame();
-    } else if (gameState === GAME_IN_PROGRESS) {
-      finishTime = new Date().getTime() - startTime;
-      var timeInSeconds = finishTime / 1000;
-      var seconds = Math.floor(timeInSeconds % 60);
-      var minutes = Math.floor(timeInSeconds / 60);
-      playerFinished = true;
-      showModal({
-        message: "Du blev klar på " + minutes + " min och " + seconds + " sek!",
-        callback: function () {
-          finishGameSound.play();
-          gameState = GAME_FINISHED;
-          updateGameState();
-          saveState();
-        }
+      const gameRef = database.ref('games/' + currentGameId);
+      gameRef.once('value', snapshot => {
+          const gameData = snapshot.val();
+
+          if (gameData && gameData.in_progress) {
+              // The game is in progress, so continue with this game
+              console.log("Game in progress. Continuing game with ID: " + currentGameId);
+              
+              if (!playerFinished){
+                finishTime = new Date().getTime() - startTime;
+                var timeInSeconds = finishTime / 1000;
+                var seconds = Math.floor(timeInSeconds % 60);
+                var minutes = Math.floor(timeInSeconds / 60);
+                playerFinished = true;
+                saveState();
+                sendGameOverEvent();
+              }
+              else{
+                startNewGame();
+              }
+          }
+          else {
+              
+              // No game found, or the game is finished, start a new game
+              console.log("No game in progress found. Starting a new game.");
+              startNewGame();
+          }
       });
-    }
+  
+
+    // if (gameState === GAME_NOT_STARTED || gameState === GAME_FINISHED || !currentGameId ) {
+    //   startNewGame();
+    // }
+    // else if (gameState === GAME_IN_PROGRESS) {
+
+      
+   // }
   }
 
   function handleSeedScanned(gameId, seed) {
@@ -1084,37 +1111,49 @@
     deleteOldGames();
     currentGameId = 'game_' + Math.random().toString(36).substr(2, 9);
     var gamesRef = database.ref('games/' + currentGameId);
-    gamesRef.set({ started: true });
+    gamesRef.set({ in_progress: true });
 
     joinGame(currentGameId, shuffledLocations);
   }
+
+
 
   function listenForEvents() {
     var eventsRef = database.ref('games/' + currentGameId + '/events');
     eventsRef.on('child_added', (snapshot) => {
       
       const event = snapshot.val();
-      if (event.action === 'treasureFound' &&event.playerId != playerId){
+      console.log("Received event "+ event.action +" for "+ currentGameId);
+      if (event.action === 'treasureFound'){
+        if (event.byPlayer != playerId){
           showModal( event.byPlayer + " hittade diamanten!");
-          beginGameEndCountdown();
         }
-      else if(event.action ="gameStarted" && event.gameId == currentGameId){
+        beginGameEndCountdown();
+        }
+      else if(event.action ==="gameStarted"){
         gameState = GAME_IN_PROGRESS;
         whistleSound.play();
         startTime = new Date().getTime();
         overlayText.classList.toggle("hidden", true);
+        saveState();
       }
-      else if(event.action ="gameOver" && event.gameId == currentGameId && gameState == GAME_IN_PROGRESS){
+      else if(event.action ==="gameOver"){
+        console.log("Received game over.");
+        if(gameState == GAME_IN_PROGRESS){
+          finishGameSound.play();
+          overlayText.classList.toggle("hidden", false)
+          if (playerFinished){
+            overlayText.textContent="Du hann tillbaka med " + money.toString() + " kr!";
+          }
+          else{
+            overlayText.textContent="Tyvärr hann du inte tillbaka i tid :(";
+          }
+        }
         gameState = GAME_FINISHED;
-        finishGameSound.play();
-        overlayText.classList.toggle("hidden", false)
-        if (playerFinished){
-          overlayText.textContent="Du hann tillbaka med " + money.toString() + " kr!";
-        }
-        else{
-          overlayText.textContent="Tyvärr hann du inte tillbaka i tid :(";
-        }
+        updateGameState();
+        saveState();
       }
+      
 
     });
 
@@ -1147,6 +1186,7 @@
   }
   if (window.location.hostname == "localhost") {
      testMode = true;
+     
   }
   testMode = true;
   document.querySelector("button").addEventListener("click", () => clickSound.play());
