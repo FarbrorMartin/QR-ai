@@ -1126,7 +1126,7 @@
       console.log("Received event "+ event.action +" for "+ currentGameId);
       if (event.action === 'treasureFound'){
         if (event.byPlayer != playerId){
-          showModal( event.byPlayer + " hittade diamanten!");
+          showModal({message:"Diamanten är hittad, skynda dig till start!"});
         }
         beginGameEndCountdown();
         }
@@ -1141,12 +1141,15 @@
         console.log("Received game over.");
         if(gameState == GAME_IN_PROGRESS){
           finishGameSound.play();
-          overlayText.classList.toggle("hidden", false)
+          overlayText.classList.toggle("hidden", true)
           if (playerFinished){
-            overlayText.textContent="Du hann tillbaka med " + money.toString() + " kr!";
+            showModal({message:"Du hann tillbaka med " + money.toString() + " kr!"});
+
           }
           else{
-            overlayText.textContent="Tyvärr hann du inte tillbaka i tid :(";
+            showModal({message:"Tyvärr hann du inte tillbaka i tid :("});
+            money = 0;
+
           }
         }
         gameState = GAME_FINISHED;
