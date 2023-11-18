@@ -888,6 +888,8 @@
 
   function sendGameOverEvent(){
     console.log("Sending game over for "+ currentGameId);
+    const gameRef = database.ref('games/' + currentGameId);
+    gameRef.set({ started : false }); // TODO: use a game state instead so that a game can be in progress or finished.
     var eventsRef = database.ref('games/' + currentGameId + '/events');
     eventsRef.push({
       action: 'gameOver',
@@ -986,7 +988,7 @@
                 var minutes = Math.floor(timeInSeconds / 60);
                 playerFinished = true;
                 saveState();
-                sendGameOverEvent();
+                
               }
               else{
                 startNewGame();
