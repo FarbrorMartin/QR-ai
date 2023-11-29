@@ -19,7 +19,7 @@
       height: 100%;
       width: 100%;
       font-family: 'Arial', sans-serif;
-      background-image: url('jungle_background2.jpg');
+      background-image: url('images/jungle_background2.jpg');
       background-size: cover;
       background-repeat: no-repeat;
 
@@ -28,7 +28,7 @@
 
     .header {
       text-shadow: 0px 0px 6px rgb(255 144 0);
-      background-image: url(banner2.png);
+      background-image: url('images/banner2.png');
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
@@ -133,17 +133,12 @@
     }
 
     .modal-content-center-element {
-      height: 50%;
+      height: 45%;
       padding-top: 2vh;
     }
 
     .modal-content button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 1vh;
-      margin-bottom: 1vh;
+
     }
 
     .modal-content button:hover {
@@ -151,12 +146,18 @@
     }
 
     .modal-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      /* padding: 1vh; */
+      /* margin-bottom: 1vh; */
       width: 60%;
       height: 15%;
       font-size: 12vmin;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      /* display: flex; */
+      /* align-items: center; */
+
     }
 
     .timed-popup {
@@ -259,7 +260,7 @@
     }
 
     .scan-button {
-      background: url('qr-code-scan-icon.png') no-repeat center center;
+      background: url('images/qr-code-scan-icon.png') no-repeat center center;
       background-size: contain;
       width: 20vw;
       /* Decrease the width of the scan button */
@@ -274,7 +275,7 @@
     }
 
     .scan-button.active {
-      background: url('qr-code-scan-icon-active.png') no-repeat center center;
+      background: url('images/qr-code-scan-icon-active.png') no-repeat center center;
       background-size: contain;
     }
 
@@ -313,7 +314,7 @@
       </div>
       <div id="game-container" class="game-container">
         <div class="diamond-container">
-          <img src="diamond.png" class="top-gem">
+          <img src="images/diamond.png" class="top-gem">
         </div>
         <div class="grid">
           <!-- 5x4 grid of random gems -->
